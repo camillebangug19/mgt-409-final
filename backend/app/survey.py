@@ -1,0 +1,386 @@
+"""The survey slot engine (REQUIREMENTS.md 5.3).
+
+Plain Python decides which slots exist, which are still missing and what the
+next question is about. The LLM only phrases the question and parses the reply
+into `record_answer`, so the conversation can never wander off the script.
+"""
+
+import json
+import re
+from typing import Any
+
+from . import kb
+from .models import HouseholdProfile, Person, Pet
+from .scoring import applicable_items
+
+SECTIONS = ("Household", "Needs", "Pets", "Location", "What you already have")
+
+AGE_GROUPS = ("infant", "child", "teen", "adult", "older_adult")
+AGE_GROUP_HINT = "infant (<1), child (1-12), teen, adult, older_adult (65+)"
+MOBILITY_OPTIONS = ("none", "cane_or_walker", "wheelchair", "bedbound")
+EQUIPMENT_OPTIONS = ("oxygen", "cpap", "dialysis", "powered_wheelchair", "other")
+HOUSING_OPTIONS = ("house", "apartment", "mobile_home", "other")
+ANSWER_OPTIONS = ("yes", "partly", "no", "not_sure")
+
+# Baseline slots are named after their rubric item, so scoring reads them directly.
+BASELINE_PROMPTS = {
+    "water": "three or more days of water stored (1 gallon per person per day)",
+    "food": "three or more days of food that needs no cooking",
+    "light_radio": "a flashlight, a radio and spare batteries",
+    "first_aid": "a first-aid kit",
+    "phone_power": "a way to charge a phone when the power is out",
+    "written_plan": "a written family emergency plan",
+    "meeting_place": "an agreed meeting place",
+    "out_of_area_contact": "an out-of-area contact everyone knows",
+    "knows_routes": "knowing your evacuation routes",
+    "transportation_plan": "a transportation plan if you had to leave",
+    "alerts_on": "emergency alerts turned on",
+    "meds_7day": "a 7-day supply of daily medications",
+    "backup_power": "a backup power plan for medical equipment",
+    "infant_feeding": "emergency infant feeding supplies",
+    "evacuation_helper": "someone arranged to help you evacuate",
+    "pet_go_kit": "a go-kit for your pets",
+    "pet_lodging": "pet-friendly lodging identified",
+}
+
+MAX_PEOPLE = 12
+
+
+class SlotError(ValueError):
+    """Raised when a value does not fit the slot's schema."""
+
+
+# --- validation -----------------------------------------------------------
+
+def _as_obj(value: Any) -> Any:
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except (json.JSONDecodeError, TypeError):
+            return value
+    return value
+
+
+def _one_of(value: Any, options: tuple[str, ...], slot: str) -> str:
+    text = str(value).strip().lower().replace(" ", "_").replace("-", "_")
+    if text not in options:
+        raise SlotError(f"{slot} must be one of {', '.join(options)} (got {value!r})")
+    return text
+
+
+def _as_bool(value: Any, slot: str) -> bool:
+    if isinstance(value, bool):
+        return value
+    text = str(value).strip().lower()
+    if text in ("true", "yes", "y", "1"):
+        return True
+    if text in ("false", "no", "n", "0"):
+        return False
+    raise SlotError(f"{slot} must be yes or no (got {value!r})")
+
+
+def validate_slot(slot: str, value: Any) -> Any:
+    """Validate and normalise one answer. Raises SlotError with a usable message."""
+    value = _as_obj(value)
+
+    if slot == "num_people":
+        try:
+            count = int(value)
+        except (TypeError, ValueError):
+            raise SlotError(f"num_people must be a whole number (got {value!r})")
+        if not 1 <= count <= MAX_PEOPLE:
+            raise SlotError(f"num_people must be between 1 and {MAX_PEOPLE}")
+        return count
+
+    if re.fullmatch(r"person_\d+", slot):
+        if isinstance(value, str):
+            value = {"age_group": value}
+        if not isinstance(value, dict) or "age_group" not in value:
+            raise SlotError(f"{slot} needs an age_group: {AGE_GROUP_HINT}")
+        person = {"age_group": _one_of(value["age_group"], AGE_GROUPS, slot)}
+        nickname = (value.get("nickname") or "").strip()
+        if nickname:
+            person["nickname"] = nickname[:40]
+        return person
+
+    if slot == "mobility_needs":
+        if _is_none_marker(value):
+            return {"none": True}
+        entries = _people_entries(value, slot)
+        cleaned = []
+        for entry in entries:
+            cleaned.append({
+                "person": _person_index(entry, slot),
+                "mobility": _one_of(entry.get("mobility", "none"), MOBILITY_OPTIONS, slot),
+                "needs_evac_help": _as_bool(entry.get("needs_evac_help", False), slot),
+            })
+        return {"people": cleaned}
+
+    if slot == "power_equipment":
+        if _is_none_marker(value):
+            return {"none": True}
+        cleaned = []
+        for entry in _people_entries(value, slot):
+            raw = entry.get("equipment") or entry.get("equipment_list") or []
+            if isinstance(raw, str):
+                raw = [raw]
+            cleaned.append({
+                "person": _person_index(entry, slot),
+                "equipment": [_one_of(e, EQUIPMENT_OPTIONS, slot) for e in raw] or ["other"],
+            })
+        return {"people": cleaned}
+
+    if slot == "daily_meds":
+        if _is_none_marker(value):
+            return {"none": True}
+        people = value.get("people") if isinstance(value, dict) else value
+        if isinstance(people, (int, str)):
+            people = [people]
+        if not isinstance(people, list) or not people:
+            raise SlotError("daily_meds needs 'none' or a list of person numbers")
+        return {"people": [_person_index(p, slot) for p in people]}
+
+    if slot == "infant_feeding_method":
+        return _one_of(value, ("breast", "formula", "both"), slot)
+
+    if slot == "pets":
+        if _is_none_marker(value):
+            return {"none": True}
+        raw = value.get("pets") if isinstance(value, dict) else value
+        if isinstance(raw, dict):
+            raw = [raw]
+        if not isinstance(raw, list) or not raw:
+            raise SlotError("pets needs 'none' or a list of {species, count}")
+        pets = []
+        for entry in raw:
+            if isinstance(entry, str):
+                entry = {"species": entry}
+            species = str(entry.get("species", "")).strip()[:30]
+            if not species:
+                raise SlotError("each pet needs a species")
+            count = int(entry.get("count", 1) or 1)
+            pets.append({"species": species, "count": max(1, min(count, 50))})
+        return {"pets": pets}
+
+    if slot == "zip_code":
+        text = str(value).strip()
+        if not re.fullmatch(r"\d{5}", text):
+            raise SlotError("zip_code must be 5 digits")
+        return text
+
+    if slot == "state":
+        text = str(value).strip().upper()
+        if not re.fullmatch(r"[A-Z]{2}", text):
+            raise SlotError("state must be a 2-letter abbreviation, e.g. TX")
+        return text
+
+    if slot == "housing_type":
+        return _one_of(value, HOUSING_OPTIONS, slot)
+
+    if slot == "has_vehicle":
+        return _as_bool(value, slot)
+
+    if slot in BASELINE_PROMPTS:
+        return _one_of(value, ANSWER_OPTIONS, slot)
+
+    raise SlotError(f"unknown slot {slot!r}")
+
+
+def _is_none_marker(value: Any) -> bool:
+    if isinstance(value, dict):
+        return bool(value.get("none"))
+    return str(value).strip().lower() in ("none", "no", "nobody", "n", "false", "[]", "")
+
+
+def _people_entries(value: Any, slot: str) -> list[dict]:
+    entries = value.get("people") if isinstance(value, dict) else value
+    if isinstance(entries, dict):
+        entries = [entries]
+    if not isinstance(entries, list) or not entries:
+        raise SlotError(f"{slot} needs 'none' or a list of people")
+    return [e if isinstance(e, dict) else {"person": e} for e in entries]
+
+
+def _person_index(entry: Any, slot: str) -> int:
+    raw = entry.get("person", entry.get("index")) if isinstance(entry, dict) else entry
+    try:
+        index = int(raw)
+    except (TypeError, ValueError):
+        raise SlotError(f"{slot} needs a person number, e.g. 1")
+    if not 1 <= index <= MAX_PEOPLE:
+        raise SlotError(f"person number must be between 1 and {MAX_PEOPLE}")
+    return index
+
+
+# --- which slots exist, given what we know so far -------------------------
+
+def required_slots(answers: dict[str, Any]) -> list[tuple[str, str]]:
+    """Ordered (slot, section) pairs, expanded from the answers so far.
+
+    Conditional slots only appear once the answer that triggers them is in:
+    a person slot per household member, infant feeding only with an infant,
+    pet questions only with pets, and medical baseline items only when needed.
+    """
+    slots: list[tuple[str, str]] = [("num_people", "Household")]
+
+    count = answers.get("num_people")
+    if not isinstance(count, int):
+        return slots
+    for i in range(1, count + 1):
+        slots.append((f"person_{i}", "Household"))
+
+    people = [answers.get(f"person_{i}") for i in range(1, count + 1)]
+    if not all(isinstance(p, dict) for p in people):
+        return slots
+
+    slots += [
+        ("mobility_needs", "Needs"),
+        ("power_equipment", "Needs"),
+        ("daily_meds", "Needs"),
+    ]
+    if any(p.get("age_group") == "infant" for p in people):
+        slots.append(("infant_feeding_method", "Needs"))
+
+    slots.append(("pets", "Pets"))
+    slots += [
+        ("zip_code", "Location"),
+        ("state", "Location"),
+        ("housing_type", "Location"),
+        ("has_vehicle", "Location"),
+    ]
+
+    # Baseline questions depend on the profile, so only ask once it is known.
+    if all(slot in answers for slot, _ in slots):
+        profile = build_profile(answers)
+        for item in applicable_items(profile):
+            slots.append((item["id"], "What you already have"))
+
+    return slots
+
+
+def build_profile(answers: dict[str, Any]) -> HouseholdProfile:
+    """Assemble a HouseholdProfile from whatever slots are filled."""
+    count = answers.get("num_people") or 0
+    mobility = {e["person"]: e for e in (answers.get("mobility_needs") or {}).get("people", [])}
+    equipment = {e["person"]: e for e in (answers.get("power_equipment") or {}).get("people", [])}
+    meds = set((answers.get("daily_meds") or {}).get("people", []))
+    feeding = answers.get("infant_feeding_method")
+
+    people = []
+    for i in range(1, int(count) + 1):
+        entry = answers.get(f"person_{i}")
+        if not isinstance(entry, dict):
+            continue
+        age_group = entry["age_group"]
+        people.append(
+            Person(
+                age_group=age_group,
+                nickname=entry.get("nickname"),
+                mobility=mobility.get(i, {}).get("mobility", "none"),
+                needs_evac_help=mobility.get(i, {}).get("needs_evac_help", False),
+                power_equipment=equipment.get(i, {}).get("equipment", []),
+                daily_meds=i in meds,
+                infant_feeding=feeding if age_group == "infant" else None,
+            )
+        )
+
+    pets = [Pet(**p) for p in (answers.get("pets") or {}).get("pets", [])]
+
+    return HouseholdProfile(
+        people=people,
+        pets=pets,
+        zip_code=answers.get("zip_code"),
+        state=answers.get("state"),
+        housing_type=answers.get("housing_type"),
+        has_vehicle=answers.get("has_vehicle"),
+    )
+
+
+def baseline_answers(answers: dict[str, Any]) -> dict[str, str]:
+    """Just the rubric-item answers, in the shape score_readiness expects."""
+    return {k: v for k, v in answers.items() if k in BASELINE_PROMPTS and isinstance(v, str)}
+
+
+# --- state the agent sees -------------------------------------------------
+
+def question_hint(slot: str, answers: dict[str, Any]) -> str:
+    """A short description of what to ask next. The agent does the wording."""
+    if slot == "num_people":
+        return "how many people live in the household, including them"
+    if match := re.fullmatch(r"person_(\d+)", slot):
+        n = match.group(1)
+        return (
+            f"the age group of person {n} ({AGE_GROUP_HINT}). "
+            "A nickname is optional and they can skip it"
+        )
+    if slot == "mobility_needs":
+        return ("whether anyone uses a cane, walker or wheelchair, is bedbound, "
+                "or would need help to evacuate, and which person that is")
+    if slot == "power_equipment":
+        return ("whether anyone uses equipment that needs electricity "
+                "(oxygen, CPAP, dialysis, powered wheelchair, other), and which person")
+    if slot == "daily_meds":
+        return "whether anyone takes daily medication, and which person"
+    if slot == "infant_feeding_method":
+        return "how the infant is fed: breast, formula or both"
+    if slot == "pets":
+        return "whether they have pets, and if so what kind and how many"
+    if slot == "zip_code":
+        return "their 5-digit ZIP code (no street address)"
+    if slot == "state":
+        return "their state, as a 2-letter abbreviation"
+    if slot == "housing_type":
+        return "whether they live in a house, apartment, mobile home or something else"
+    if slot == "has_vehicle":
+        return "whether they have a working vehicle available"
+    if slot in BASELINE_PROMPTS:
+        return (f"whether they already have {BASELINE_PROMPTS[slot]}. "
+                "Answer yes, partly, no or not sure")
+    return f"the value for {slot}"
+
+
+def quick_replies_for(slot: str) -> list[str]:
+    if slot == "num_people":
+        return ["1", "2", "3", "4", "5+"]
+    if re.fullmatch(r"person_\d+", slot):
+        return ["Infant (under 1)", "Child (1-12)", "Teen", "Adult", "Older adult (65+)"]
+    if slot == "mobility_needs":
+        return ["No one", "Cane or walker", "Wheelchair", "Needs help evacuating"]
+    if slot == "power_equipment":
+        return ["No one", "Oxygen", "CPAP", "Dialysis", "Powered wheelchair"]
+    if slot == "daily_meds":
+        return ["No one", "Yes, one person", "Yes, more than one"]
+    if slot == "infant_feeding_method":
+        return ["Breast", "Formula", "Both"]
+    if slot == "pets":
+        return ["No pets", "Dog", "Cat", "Other"]
+    if slot == "housing_type":
+        return ["House", "Apartment", "Mobile home", "Other"]
+    if slot == "has_vehicle":
+        return ["Yes", "No"]
+    if slot in BASELINE_PROMPTS:
+        return ["Yes", "Partly", "No", "Not sure"]
+    return []
+
+
+def survey_state(answers: dict[str, Any]) -> dict:
+    """What is filled, what is missing, and what to ask next."""
+    required = required_slots(answers)
+    filled = [slot for slot, _ in required if slot in answers]
+    missing = [(slot, section) for slot, section in required if slot not in answers]
+
+    next_slot, next_section = (missing[0] if missing else (None, None))
+    done = not missing and bool(answers.get("num_people"))
+
+    return {
+        "filled": filled,
+        "missing": [slot for slot, _ in missing],
+        "next_slot": next_slot,
+        "next_section": next_section,
+        "next_question_about": question_hint(next_slot, answers) if next_slot else None,
+        "quick_replies": quick_replies_for(next_slot) if next_slot else [],
+        "sections": list(SECTIONS),
+        "section_index": SECTIONS.index(next_section) if next_section else len(SECTIONS) - 1,
+        "progress": round(len(filled) / max(len(required), 1), 2),
+        "done": done,
+    }

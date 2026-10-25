@@ -1,0 +1,26 @@
+"""Request and response shapes for the HTTP API."""
+
+from pydantic import BaseModel, Field
+
+from .agents.survey_bot import MAX_MESSAGE_CHARS
+
+
+class SessionResponse(BaseModel):
+    session_id: str
+
+
+class ChatRequest(BaseModel):
+    session_id: str
+    message: str = Field(default="", max_length=MAX_MESSAGE_CHARS)
+
+
+class ChatResponse(BaseModel):
+    message: str
+    quick_replies: list[str] = []
+    done: bool = False
+    section: str | None = None
+    sections: list[str] = []
+    section_index: int = 0
+    progress: float = 0.0
+    filled: int = 0
+    total: int = 0
