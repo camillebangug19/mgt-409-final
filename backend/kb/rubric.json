@@ -1,0 +1,27 @@
+{
+  "note": "Score items come from Ready.gov, CDC and Red Cross checklists. The weights are ReadyHome's own.",
+  "items": [
+    {"id": "water",              "category": "Supplies",      "label": "Water for 3+ days (1 gallon per person per day)", "points": 1.0,  "applies_if": "always",              "source_ids": ["ready_kit"],                  "step_id": "kit-phases"},
+    {"id": "food",               "category": "Supplies",      "label": "Non-perishable food for 3+ days",                 "points": 0.75, "applies_if": "always",              "source_ids": ["ready_kit"],                  "step_id": "kit-phases"},
+    {"id": "light_radio",        "category": "Supplies",      "label": "Flashlight, radio and spare batteries",           "points": 0.5,  "applies_if": "always",              "source_ids": ["ready_kit"],                  "step_id": "kit-phases"},
+    {"id": "first_aid",          "category": "Supplies",      "label": "First-aid kit",                                   "points": 0.5,  "applies_if": "always",              "source_ids": ["ready_kit"],                  "step_id": "kit-phases"},
+    {"id": "phone_power",        "category": "Supplies",      "label": "Backup power for your phone",                     "points": 0.25, "applies_if": "always",              "source_ids": ["ready_kit"],                  "step_id": "kit-phases"},
+
+    {"id": "written_plan",       "category": "Plan",          "label": "A written family emergency plan",                 "points": 1.0,  "applies_if": "always",              "source_ids": ["ready_lowcost"],              "step_id": "family-plan"},
+    {"id": "meeting_place",      "category": "Plan",          "label": "An agreed meeting place",                         "points": 0.5,  "applies_if": "always",              "source_ids": ["ready_lowcost"],              "step_id": "family-plan"},
+    {"id": "out_of_area_contact","category": "Plan",          "label": "An out-of-area contact everyone knows",           "points": 0.5,  "applies_if": "always",              "source_ids": ["ready_lowcost"],              "step_id": "family-plan"},
+
+    {"id": "knows_routes",       "category": "Evacuation",    "label": "You know your evacuation routes",                 "points": 0.75, "applies_if": "always",              "source_ids": ["ready_lowcost"],              "step_id": "evacuation-routes"},
+    {"id": "transportation_plan","category": "Evacuation",    "label": "A transportation plan if you have to leave",       "points": 0.75, "applies_if": "always",              "source_ids": ["ready_lowcost", "acl_older"], "step_id": "transportation-plan"},
+
+    {"id": "alerts_on",          "category": "Alerts",        "label": "Emergency alerts turned on",                      "points": 0.5,  "applies_if": "always",              "source_ids": ["ready_alerts"],               "step_id": "alerts-on"},
+
+    {"id": "meds_7day",          "category": "Special needs", "label": "A 7-day supply of daily medications",             "points": 0.75, "applies_if": "has_meds",            "source_ids": ["acl_older"],                  "step_id": "meds-7day"},
+    {"id": "backup_power",       "category": "Special needs", "label": "A backup power plan for medical equipment",       "points": 0.75, "applies_if": "has_power_dependent", "source_ids": ["hhs_empower", "acl_older"],   "step_id": "backup-power"},
+    {"id": "infant_feeding",     "category": "Special needs", "label": "Infant feeding supplies for an emergency",        "points": 0.5,  "applies_if": "has_infant",          "source_ids": ["cdc_infant", "aap_kids"],     "step_id": "infant-feeding-kit"},
+    {"id": "evacuation_helper",  "category": "Special needs", "label": "Someone arranged to help you evacuate",           "points": 0.5,  "applies_if": "needs_evac_help",     "source_ids": ["acl_older"],                  "step_id": "evacuation-helper"},
+
+    {"id": "pet_go_kit",         "category": "Pets",          "label": "A go-kit for your pets",                          "points": 0.5,  "applies_if": "has_pets",            "source_ids": ["redcross_pets"],              "step_id": "pet-kit-lodging"},
+    {"id": "pet_lodging",        "category": "Pets",          "label": "Pet-friendly lodging identified",                 "points": 0.5,  "applies_if": "has_pets",            "source_ids": ["redcross_pets"],              "step_id": "pet-kit-lodging"}
+  ]
+}

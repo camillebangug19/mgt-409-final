@@ -1,0 +1,55 @@
+{
+  "sources": {
+    "ready_kit":      {"publisher": "Ready.gov (FEMA)",        "title": "Build A Kit",                                  "source_url": "https://www.ready.gov/kit"},
+    "ready_lowcost":  {"publisher": "Ready.gov (FEMA)",        "title": "Low and No Cost Preparedness",                 "source_url": "https://www.ready.gov/collection/low-and-no-cost-preparedness"},
+    "ready_alerts":   {"publisher": "Ready.gov (FEMA)",        "title": "Emergency Alerts",                             "source_url": "https://ready.gov/alerts"},
+    "cdc_infant":     {"publisher": "CDC",                     "title": "Infant Feeding in Emergencies: Checklist",     "source_url": "https://www.cdc.gov/nutrition/emergencies-infant-feeding/checklist.html"},
+    "aap_kids":       {"publisher": "American Academy of Pediatrics", "title": "Disasters and Children: Resources for Families", "source_url": "https://www.aap.org/en/patient-care/disasters-and-children/resources-for-families/"},
+    "acl_older":      {"publisher": "Administration for Community Living", "title": "Emergency Preparedness",          "source_url": "https://www.acl.gov/programs/emergency-preparedness"},
+    "hhs_empower":    {"publisher": "HHS emPOWER Program",     "title": "About emPOWER",                                "source_url": "https://empowerprogram.hhs.gov/about.html"},
+    "redcross_pets":  {"publisher": "American Red Cross",      "title": "Make Pets Part of Your Emergency Plans",       "source_url": "https://www.redcross.org/about-us/news-and-events/news/2025/make-pets-part-of-your-emergency-plans.html"},
+    "tx_stear":       {"publisher": "Texas Division of Emergency Management", "title": "State of Texas Emergency Assistance Registry (STEAR)", "source_url": "https://tdem.texas.gov/response/state-of-texas-emergency-assistance-registry"}
+  },
+  "modules": {
+    "kit-phases": {
+      "summary": "Ready.gov recommends a basic kit with several days of water and food, a flashlight, a battery or hand-crank radio, extra batteries and a first-aid kit. Building it in phases spreads the cost.",
+      "source_ids": ["ready_kit", "ready_lowcost"]
+    },
+    "family-plan": {
+      "summary": "A family emergency plan writes down where you will meet, how you will reach each other, and who your out-of-area contact is. It costs nothing to make.",
+      "source_ids": ["ready_lowcost"]
+    },
+    "evacuation-routes": {
+      "summary": "Know more than one way out of your neighbourhood and practise it, so you are not deciding under pressure.",
+      "source_ids": ["ready_lowcost"]
+    },
+    "transportation-plan": {
+      "summary": "If you do not drive or may not have a vehicle available, arrange in advance who will drive you or which transit or paratransit service you would use.",
+      "source_ids": ["ready_lowcost", "acl_older"]
+    },
+    "alerts-on": {
+      "summary": "Wireless Emergency Alerts and NOAA Weather Radio warn you about hazards in your area. Turning alerts on is free and takes a minute.",
+      "source_ids": ["ready_alerts"]
+    },
+    "meds-7day": {
+      "summary": "Keep at least a 7-day supply of daily medications, with a written list of what each person takes. Talk to your doctor or pharmacist about building and rotating that supply.",
+      "source_ids": ["acl_older"]
+    },
+    "backup-power": {
+      "summary": "Equipment such as oxygen concentrators, CPAP machines, dialysis equipment and powered wheelchairs stops working in an outage. Plan a backup power source and know where you would go if the power stays off.",
+      "source_ids": ["hhs_empower", "acl_older"]
+    },
+    "infant-feeding-kit": {
+      "summary": "CDC's emergency infant-feeding checklist covers what to store for breastfed and formula-fed infants, including clean water, feeding supplies and a way to clean them.",
+      "source_ids": ["cdc_infant", "aap_kids"]
+    },
+    "evacuation-helper": {
+      "summary": "If you would need help to leave, agree in advance with a specific person who will come for you, and have a backup person.",
+      "source_ids": ["acl_older"]
+    },
+    "pet-kit-lodging": {
+      "summary": "The Red Cross recommends a go-kit for each pet and identifying pet-friendly lodging ahead of time, because many emergency shelters cannot take pets.",
+      "source_ids": ["redcross_pets"]
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "note": "The four personas from REQUIREMENTS.md 13.1. 'default_answer' fills every applicable rubric item not named in 'answers' ('the rest').",
+  "personas": {
+    "A": {
+      "name": "Young family + dog",
+      "profile": {
+        "people": [
+          {"age_group": "adult"},
+          {"age_group": "adult"},
+          {"age_group": "infant", "infant_feeding": "formula"},
+          {"age_group": "child", "nickname": "age 4"}
+        ],
+        "pets": [{"species": "dog", "count": 1}],
+        "zip_code": "78701", "state": "TX", "housing_type": "house", "has_vehicle": true
+      },
+      "default_answer": "no",
+      "answers": {"water": "yes", "food": "partly", "written_plan": "no", "alerts_on": "yes", "pet_go_kit": "no"}
+    },
+    "B": {
+      "name": "Grandparent on oxygen",
+      "profile": {
+        "people": [
+          {"age_group": "adult"},
+          {"age_group": "older_adult", "mobility": "cane_or_walker", "power_equipment": ["oxygen"], "daily_meds": true}
+        ],
+        "pets": [],
+        "zip_code": "32399", "state": "FL", "housing_type": "apartment", "has_vehicle": false
+      },
+      "default_answer": "partly",
+      "answers": {"water": "yes", "meds_7day": "partly", "backup_power": "no", "transportation_plan": "no"}
+    },
+    "C": {
+      "name": "Wheelchair user + cat",
+      "profile": {
+        "people": [{"age_group": "adult", "mobility": "wheelchair", "needs_evac_help": true}],
+        "pets": [{"species": "cat", "count": 1}],
+        "zip_code": "75201", "state": "TX", "housing_type": "apartment", "has_vehicle": true
+      },
+      "default_answer": "no",
+      "answers": {}
+    },
+    "D": {
+      "name": "Prepared single adult",
+      "profile": {
+        "people": [{"age_group": "adult"}],
+        "pets": [],
+        "zip_code": "06106", "state": "CT", "housing_type": "house", "has_vehicle": true
+      },
+      "default_answer": "yes",
+      "answers": {}
+    }
+  }
+}

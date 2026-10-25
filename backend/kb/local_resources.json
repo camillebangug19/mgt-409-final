@@ -1,0 +1,19 @@
+{
+  "note": "TX and CT only (REQUIREMENTS.md 7.2). Entries with verified=false are hidden in the UI and must be filled in by hand. Do not guess URLs.",
+  "fallback": [
+    {"state": "*", "type": "national", "name": "Ready.gov", "url": "https://www.ready.gov/kit", "verified": true},
+    {"state": "*", "type": "national", "name": "Ready.gov — Low and No Cost Preparedness", "url": "https://www.ready.gov/collection/low-and-no-cost-preparedness", "verified": true}
+  ],
+  "states": {
+    "TX": [
+      {"state": "TX", "type": "registry", "name": "State of Texas Emergency Assistance Registry (STEAR)", "url": "https://tdem.texas.gov/response/state-of-texas-emergency-assistance-registry", "verified": true},
+      {"state": "TX", "type": "state_emergency_management", "name": "Texas Division of Emergency Management", "url": "TODO", "verified": false},
+      {"state": "TX", "type": "state_health", "name": "Texas DSHS emergency preparedness", "url": "TODO", "verified": false}
+    ],
+    "CT": [
+      {"state": "CT", "type": "state_emergency_management", "name": "Connecticut Division of Emergency Management and Homeland Security", "url": "TODO", "verified": false},
+      {"state": "CT", "type": "alerts", "name": "CT Alert emergency notification system", "url": "TODO", "verified": false},
+      {"state": "CT", "type": "registry", "name": "Connecticut special-needs / reduced-mobility registry", "url": "TODO", "verified": false}
+    ]
+  }
+}

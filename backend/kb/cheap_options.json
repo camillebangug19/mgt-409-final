@@ -1,0 +1,13 @@
+{
+  "note": "Low and no cost ideas only. No shopping or affiliate links (REQUIREMENTS.md 6.3).",
+  "options": [
+    {"id": "lowcost_water",  "label": "Refill clean soda or juice bottles with tap water instead of buying cases", "cost_band": "free",  "source_id": "ready_lowcost"},
+    {"id": "lowcost_food",   "label": "Add one or two extra tins to your normal grocery shop each week",           "cost_band": "free",  "source_id": "ready_lowcost"},
+    {"id": "lowcost_light",  "label": "Start with the flashlight you already own and add batteries over time",      "cost_band": "<$25",  "source_id": "ready_lowcost"},
+    {"id": "lowcost_firstaid","label": "Build a first-aid kit gradually from what is already in your medicine cabinet", "cost_band": "<$25", "source_id": "ready_lowcost"},
+    {"id": "lowcost_plan",   "label": "Writing your family plan down is free",                                      "cost_band": "free",  "source_id": "ready_lowcost"},
+    {"id": "lowcost_alerts", "label": "Turning on alerts on a phone you already have is free",                      "cost_band": "free",  "source_id": "ready_alerts"},
+    {"id": "lowcost_petkit", "label": "Start the pet kit with food, a spare leash and a copy of vaccination records you already have", "cost_band": "free", "source_id": "redcross_pets"},
+    {"id": "lowcost_docs",   "label": "Photograph important documents with your phone instead of printing copies",  "cost_band": "free",  "source_id": "ready_lowcost"}
+  ]
+}

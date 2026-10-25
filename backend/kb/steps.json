@@ -1,0 +1,184 @@
+{
+  "note": "priority 1 = life-safety / special-needs steps, surfaced ahead of general steps. See scoring.rank_next_steps.",
+  "steps": [
+    {
+      "id": "backup-power",
+      "title": "Make a backup power plan for medical equipment",
+      "priority": 1,
+      "rubric_item_ids": ["backup_power"],
+      "est_minutes": 30,
+      "est_cost_band": "free",
+      "how_to": [
+        "List every device that needs electricity and how long its battery lasts.",
+        "Ask the equipment supplier what backup options they support.",
+        "Decide where you would go if the power stays off, and how you would get there.",
+        "Tell your utility you have a power-dependent medical need and ask about their medical-needs register."
+      ],
+      "self_check": [{"item_id": "backup_power", "label": "I know what we would do if the power went out for 24 hours"}],
+      "source_ids": ["hhs_empower", "acl_older"],
+      "cheap_option_ids": []
+    },
+    {
+      "id": "meds-7day",
+      "title": "Do a 7-day medication check",
+      "priority": 1,
+      "rubric_item_ids": ["meds_7day"],
+      "est_minutes": 20,
+      "est_cost_band": "free",
+      "how_to": [
+        "Write down every daily medication for each person.",
+        "Count how many days of each you have on hand right now.",
+        "Ask your doctor or pharmacist how to build up to a 7-day supply and how to rotate it.",
+        "Keep the written list with your emergency documents."
+      ],
+      "self_check": [{"item_id": "meds_7day", "label": "We have about a week of each daily medication, and a written list"}],
+      "source_ids": ["acl_older"],
+      "cheap_option_ids": ["lowcost_docs"],
+      "medical_note": "Not medical advice. Ask your doctor or pharmacist about medications and medical devices."
+    },
+    {
+      "id": "transportation-plan",
+      "title": "Make a transportation plan",
+      "priority": 2,
+      "priority_if": {"has_no_vehicle": 1},
+      "rubric_item_ids": ["transportation_plan"],
+      "est_minutes": 20,
+      "est_cost_band": "free",
+      "how_to": [
+        "Decide who would drive you, or which transit or paratransit service you would use.",
+        "Agree a backup in case your first choice is not available.",
+        "Save their numbers in your phone and write them on the family plan."
+      ],
+      "self_check": [{"item_id": "transportation_plan", "label": "We know how we would physically leave, and who would drive"}],
+      "source_ids": ["ready_lowcost", "acl_older"],
+      "cheap_option_ids": ["lowcost_plan"]
+    },
+    {
+      "id": "evacuation-helper",
+      "title": "Arrange someone to help you evacuate",
+      "priority": 1,
+      "rubric_item_ids": ["evacuation_helper"],
+      "est_minutes": 20,
+      "est_cost_band": "free",
+      "how_to": [
+        "Ask one specific neighbour, friend or relative to be your evacuation helper, and agree a backup.",
+        "Give them a key or tell them how they would get in.",
+        "Agree how they will reach you if phones are down."
+      ],
+      "self_check": [{"item_id": "evacuation_helper", "label": "A specific person has agreed to help us leave, and we have a backup"}],
+      "source_ids": ["acl_older"],
+      "cheap_option_ids": [],
+      "state_extras": {"TX": ["tx_stear"]}
+    },
+    {
+      "id": "infant-feeding-kit",
+      "title": "Put together an infant feeding kit",
+      "priority": 1,
+      "rubric_item_ids": ["infant_feeding"],
+      "est_minutes": 30,
+      "est_cost_band": "<$25",
+      "how_to": [
+        "Work through CDC's emergency infant-feeding checklist for how your baby is fed.",
+        "Store clean water for preparing feeds and for cleaning feeding equipment.",
+        "Keep enough feeding supplies for several days and check expiry dates when the clocks change."
+      ],
+      "self_check": [{"item_id": "infant_feeding", "label": "We have several days of feeding supplies and a way to clean them"}],
+      "source_ids": ["cdc_infant", "aap_kids"],
+      "cheap_option_ids": ["lowcost_water"]
+    },
+    {
+      "id": "family-plan",
+      "title": "Make a written family emergency plan",
+      "priority": 2,
+      "rubric_item_ids": ["written_plan", "meeting_place", "out_of_area_contact"],
+      "est_minutes": 30,
+      "est_cost_band": "free",
+      "how_to": [
+        "Agree where you will meet if you cannot get home, and a second place outside the neighbourhood.",
+        "Pick one out-of-area contact everybody can call, since local lines are often busy.",
+        "Write it on one page, photograph it, and give a copy to each adult."
+      ],
+      "self_check": [
+        {"item_id": "written_plan", "label": "Our plan is written down somewhere everyone can find"},
+        {"item_id": "meeting_place", "label": "We agreed a meeting place"},
+        {"item_id": "out_of_area_contact", "label": "We agreed an out-of-area contact"}
+      ],
+      "source_ids": ["ready_lowcost"],
+      "cheap_option_ids": ["lowcost_plan", "lowcost_docs"]
+    },
+    {
+      "id": "kit-phases",
+      "title": "Build your kit in phases (water and light first)",
+      "priority": 2,
+      "rubric_item_ids": ["water", "food", "light_radio", "first_aid", "phone_power"],
+      "est_minutes": 45,
+      "est_cost_band": "$25–75",
+      "how_to": [
+        "Phase 1: water, one gallon per person per day for three days, plus a flashlight and batteries.",
+        "Phase 2: three days of food that needs no cooking, and a radio.",
+        "Phase 3: a first-aid kit and a way to charge your phone.",
+        "Add a little each shop rather than buying it all at once."
+      ],
+      "self_check": [
+        {"item_id": "water", "label": "Three days of water per person"},
+        {"item_id": "light_radio", "label": "Flashlight, radio and spare batteries"},
+        {"item_id": "food", "label": "Three days of food that needs no cooking"},
+        {"item_id": "first_aid", "label": "A first-aid kit"},
+        {"item_id": "phone_power", "label": "A way to charge a phone with the power off"}
+      ],
+      "source_ids": ["ready_kit", "ready_lowcost"],
+      "cheap_option_ids": ["lowcost_water", "lowcost_food", "lowcost_light", "lowcost_firstaid"]
+    },
+    {
+      "id": "pet-kit-lodging",
+      "title": "Make a pet go-kit and find pet-friendly lodging",
+      "priority": 2,
+      "rubric_item_ids": ["pet_go_kit", "pet_lodging"],
+      "est_minutes": 30,
+      "est_cost_band": "<$25",
+      "how_to": [
+        "Pack several days of pet food and water, a spare leash or carrier, and any pet medication.",
+        "Add a copy of vaccination records and a photo of you with your pet in case you are separated.",
+        "Call two places outside your area now and check they take pets in an emergency."
+      ],
+      "self_check": [
+        {"item_id": "pet_go_kit", "label": "A go-kit is packed for every pet"},
+        {"item_id": "pet_lodging", "label": "We know somewhere pet-friendly we could go"}
+      ],
+      "source_ids": ["redcross_pets"],
+      "cheap_option_ids": ["lowcost_petkit"]
+    },
+    {
+      "id": "evacuation-routes",
+      "title": "Learn your evacuation routes",
+      "priority": 2,
+      "rubric_item_ids": ["knows_routes"],
+      "est_minutes": 20,
+      "est_cost_band": "free",
+      "how_to": [
+        "Find two different ways out of your neighbourhood.",
+        "Drive or walk each one once so it is familiar.",
+        "Write both on the family plan."
+      ],
+      "self_check": [{"item_id": "knows_routes", "label": "We know two ways out of our neighbourhood"}],
+      "source_ids": ["ready_lowcost"],
+      "cheap_option_ids": ["lowcost_plan"]
+    },
+    {
+      "id": "alerts-on",
+      "title": "Turn on emergency alerts",
+      "priority": 2,
+      "rubric_item_ids": ["alerts_on"],
+      "est_minutes": 5,
+      "est_cost_band": "free",
+      "how_to": [
+        "Check Wireless Emergency Alerts are on in your phone settings.",
+        "Sign up for your county or city alert service.",
+        "Consider a NOAA Weather Radio if you lose signal where you live."
+      ],
+      "self_check": [{"item_id": "alerts_on", "label": "Emergency alerts are switched on for every phone in the house"}],
+      "source_ids": ["ready_alerts"],
+      "cheap_option_ids": ["lowcost_alerts"]
+    }
+  ]
+}
