@@ -106,13 +106,21 @@ def validate_slot(slot: str, value: Any) -> Any:
     if slot == "mobility_needs":
         if _is_none_marker(value):
             return {"none": True}
-        entries = _people_entries(value, slot)
         cleaned = []
-        for entry in entries:
+        for entry in _people_entries(value, slot):
+            mobility = entry.get("mobility")
+            helps = entry.get("needs_evac_help")
+            # A bare answer like "wheelchair" or "needs help evacuating".
+            if mobility is None:
+                text = str(entry.get("text", "")).lower()
+                if "evacuat" in text or "help" in text:
+                    mobility, helps = "none", True
+                else:
+                    mobility = text or "none"
             cleaned.append({
                 "person": _person_index(entry, slot),
-                "mobility": _one_of(entry.get("mobility", "none"), MOBILITY_OPTIONS, slot),
-                "needs_evac_help": _as_bool(entry.get("needs_evac_help", False), slot),
+                "mobility": _one_of(mobility, MOBILITY_OPTIONS, slot),
+                "needs_evac_help": _as_bool(helps, slot) if helps is not None else False,
             })
         return {"people": cleaned}
 
@@ -121,12 +129,18 @@ def validate_slot(slot: str, value: Any) -> Any:
             return {"none": True}
         cleaned = []
         for entry in _people_entries(value, slot):
-            raw = entry.get("equipment") or entry.get("equipment_list") or []
+            raw = entry.get("equipment") or entry.get("equipment_list") or entry.get("text") or []
             if isinstance(raw, str):
-                raw = [raw]
+                raw = [part for part in re.split(r"[,/]| and ", raw) if part.strip()]
+            equipment = []
+            for item in raw:
+                try:
+                    equipment.append(_one_of(item, EQUIPMENT_OPTIONS, slot))
+                except SlotError:
+                    equipment.append("other")  # unrecognised device still counts
             cleaned.append({
                 "person": _person_index(entry, slot),
-                "equipment": [_one_of(e, EQUIPMENT_OPTIONS, slot) for e in raw] or ["other"],
+                "equipment": equipment or ["other"],
             })
         return {"people": cleaned}
 
@@ -137,8 +151,9 @@ def validate_slot(slot: str, value: Any) -> Any:
         if isinstance(people, (int, str)):
             people = [people]
         if not isinstance(people, list) or not people:
-            raise SlotError("daily_meds needs 'none' or a list of person numbers")
-        return {"people": [_person_index(p, slot) for p in people]}
+            # "yes" with nobody named still means somebody takes medication.
+            return {"people": [None]}
+        return {"people": [_person_index({"person": p}, slot) for p in people]}
 
     if slot == "infant_feeding_method":
         return _one_of(value, ("breast", "formula", "both"), slot)
@@ -189,27 +204,42 @@ def validate_slot(slot: str, value: Any) -> Any:
 def _is_none_marker(value: Any) -> bool:
     if isinstance(value, dict):
         return bool(value.get("none"))
-    return str(value).strip().lower() in ("none", "no", "nobody", "n", "false", "[]", "")
+    if isinstance(value, list):
+        return not value
+    text = str(value).strip().lower().rstrip(".!")
+    return text in ("none", "no", "nobody", "no one", "n", "false", "[]", "", "no pets", "none of us")
 
 
 def _people_entries(value: Any, slot: str) -> list[dict]:
+    """Accept the structured form, or a plain answer like "oxygen"."""
+    if isinstance(value, str):
+        return [{"text": value}]
     entries = value.get("people") if isinstance(value, dict) else value
+    if entries is None and isinstance(value, dict):
+        # e.g. {"equipment": ["oxygen"]} with no person named
+        entries = [value]
     if isinstance(entries, dict):
         entries = [entries]
     if not isinstance(entries, list) or not entries:
         raise SlotError(f"{slot} needs 'none' or a list of people")
-    return [e if isinstance(e, dict) else {"person": e} for e in entries]
+    return [e if isinstance(e, dict) else {"text": str(e)} for e in entries]
 
 
-def _person_index(entry: Any, slot: str) -> int:
+def _person_index(entry: Any, slot: str) -> int | None:
+    """Which person this is about, or None when we were not told.
+
+    None is fine: scoring only asks whether anyone in the household has the
+    need. build_profile attaches an unattributed need to the most likely
+    person so the Coach can still say something concrete.
+    """
     raw = entry.get("person", entry.get("index")) if isinstance(entry, dict) else entry
+    if raw is None or (isinstance(raw, str) and not raw.strip().isdigit()):
+        return None
     try:
         index = int(raw)
     except (TypeError, ValueError):
-        raise SlotError(f"{slot} needs a person number, e.g. 1")
-    if not 1 <= index <= MAX_PEOPLE:
-        raise SlotError(f"person number must be between 1 and {MAX_PEOPLE}")
-    return index
+        return None
+    return index if 1 <= index <= MAX_PEOPLE else None
 
 
 # --- which slots exist, given what we know so far -------------------------
@@ -225,20 +255,21 @@ def required_slots(answers: dict[str, Any]) -> list[tuple[str, str]]:
 
     count = answers.get("num_people")
     if not isinstance(count, int):
+        # Until we know the household size we cannot know how many person slots
+        # there are, so this is the only question that exists yet.
         return slots
     for i in range(1, count + 1):
         slots.append((f"person_{i}", "Household"))
-
-    people = [answers.get(f"person_{i}") for i in range(1, count + 1)]
-    if not all(isinstance(p, dict) for p in people):
-        return slots
 
     slots += [
         ("mobility_needs", "Needs"),
         ("power_equipment", "Needs"),
         ("daily_meds", "Needs"),
     ]
-    if any(p.get("age_group") == "infant" for p in people):
+
+    # Infant feeding depends on an age group we may not have been told yet.
+    known = [answers.get(f"person_{i}") for i in range(1, count + 1)]
+    if any(isinstance(p, dict) and p.get("age_group") == "infant" for p in known):
         slots.append(("infant_feeding_method", "Needs"))
 
     slots.append(("pets", "Pets"))
@@ -258,16 +289,46 @@ def required_slots(answers: dict[str, Any]) -> list[tuple[str, str]]:
     return slots
 
 
+# Who an unattributed need most likely belongs to, oldest first.
+_LIKELIHOOD = ("older_adult", "adult", "teen", "child", "infant")
+
+
+def _likely_person(answers: dict[str, Any], count: int) -> int:
+    """Which person a need belongs to when nobody was named.
+
+    Scoring only cares whether anyone has the need, so this only affects how
+    concretely the Coach can describe it. Oldest first is the best guess.
+    """
+    for age_group in _LIKELIHOOD:
+        for i in range(1, count + 1):
+            entry = answers.get(f"person_{i}")
+            if isinstance(entry, dict) and entry.get("age_group") == age_group:
+                return i
+    return 1
+
+
+def _attribute(entries: list[dict], answers: dict[str, Any], count: int) -> dict[int, dict]:
+    """Index entries by person, filling in a best guess where none was given."""
+    attributed: dict[int, dict] = {}
+    for entry in entries:
+        index = entry.get("person") or _likely_person(answers, count)
+        attributed[index] = entry
+    return attributed
+
+
 def build_profile(answers: dict[str, Any]) -> HouseholdProfile:
     """Assemble a HouseholdProfile from whatever slots are filled."""
-    count = answers.get("num_people") or 0
-    mobility = {e["person"]: e for e in (answers.get("mobility_needs") or {}).get("people", [])}
-    equipment = {e["person"]: e for e in (answers.get("power_equipment") or {}).get("people", [])}
-    meds = set((answers.get("daily_meds") or {}).get("people", []))
+    count = int(answers.get("num_people") or 0)
+    mobility = _attribute((answers.get("mobility_needs") or {}).get("people", []), answers, count)
+    equipment = _attribute((answers.get("power_equipment") or {}).get("people", []), answers, count)
+    meds = {
+        (p or _likely_person(answers, count))
+        for p in (answers.get("daily_meds") or {}).get("people", [])
+    }
     feeding = answers.get("infant_feeding_method")
 
     people = []
-    for i in range(1, int(count) + 1):
+    for i in range(1, count + 1):
         entry = answers.get(f"person_{i}")
         if not isinstance(entry, dict):
             continue
@@ -309,8 +370,9 @@ def question_hint(slot: str, answers: dict[str, Any]) -> str:
         return "how many people live in the household, including them"
     if match := re.fullmatch(r"person_(\d+)", slot):
         n = match.group(1)
+        who = "the person answering, so ask about them" if n == "1" else f"person {n}"
         return (
-            f"the age group of person {n} ({AGE_GROUP_HINT}). "
+            f"the age group of {who} ({AGE_GROUP_HINT}). "
             "A nickname is optional and they can skip it"
         )
     if slot == "mobility_needs":
@@ -361,6 +423,15 @@ def quick_replies_for(slot: str) -> list[str]:
     if slot in BASELINE_PROMPTS:
         return ["Yes", "Partly", "No", "Not sure"]
     return []
+
+
+def is_askable(slot: str, answers: dict[str, Any]) -> bool:
+    """Whether this slot is one of the questions the survey currently has.
+
+    Stops answers landing out of order, e.g. a baseline question being
+    recorded before we know whether it even applies to this household.
+    """
+    return slot in {name for name, _ in required_slots(answers)}
 
 
 def survey_state(answers: dict[str, Any]) -> dict:

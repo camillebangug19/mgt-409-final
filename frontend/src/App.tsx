@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { clearSession, getSessionId } from './api'
 import { Chat } from './components/Chat'
 import { Landing } from './components/Landing'
+import { ScoreReveal } from './components/ScoreReveal'
 
 type Screen = 'landing' | 'survey' | 'score'
 
@@ -43,12 +44,5 @@ export default function App() {
     return <Chat sessionId={sessionId} onDone={() => setScreen('score')} />
   }
 
-  // The score reveal and the three next steps land here in M3.
-  return (
-    <main>
-      <h1>Survey complete</h1>
-      <p>Your score and your three next steps appear here.</p>
-      <button onClick={restart}>Start over</button>
-    </main>
-  )
+  return <ScoreReveal sessionId={sessionId} onRestart={restart} />
 }

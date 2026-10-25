@@ -1,4 +1,4 @@
-import type { ChatTurn } from './types'
+import type { ChatTurn, Plan } from './types'
 
 // In production FastAPI serves this bundle, so the API is same-origin.
 const BASE = import.meta.env.DEV ? 'http://localhost:8000' : ''
@@ -31,4 +31,17 @@ export function clearSession() {
 
 export function sendMessage(sessionId: string, message: string) {
   return post<ChatTurn>('/api/chat', { session_id: sessionId, message })
+}
+
+export async function fetchPlan(sessionId: string): Promise<Plan> {
+  const response = await fetch(`${BASE}/api/plan?session_id=${encodeURIComponent(sessionId)}`)
+  if (!response.ok) throw new Error(`/api/plan failed (${response.status})`)
+  return response.json() as Promise<Plan>
+}
+
+export function completeStep(sessionId: string, stepId: string, checked: string[]) {
+  return post<Plan>(`/api/steps/${encodeURIComponent(stepId)}/complete`, {
+    session_id: sessionId,
+    checked,
+  })
 }

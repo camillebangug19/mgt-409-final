@@ -43,6 +43,10 @@ How to run the conversation:
 - Call record_answer for every piece of information the user gives you. If one
   reply answers several slots ("two adults, a baby and a four-year-old"), call
   record_answer once per slot before you reply.
+- Always call record_answer for the slot you just asked about. Keep the value
+  simple: "oxygen", "yes", "none", "wheelchair", "4", "TX".
+- If record_answer comes back with ok=false, read the error, fix the value and
+  call it again in the same turn. Never move on leaving the slot unfilled.
 - After recording, call get_survey_state again and ask about the new next slot.
 - Put the suggested quick replies in quick_replies, adapting the wording.
 - Set done to true only when get_survey_state reports done.
@@ -79,6 +83,14 @@ def build_survey_agent(model=None) -> Agent[SurveyDeps, SurveyTurn]:
                 '[{"species": "dog", "count": 1}]', or power_equipment:
                 '{"people": [{"person": 2, "equipment": ["oxygen"]}]}'.
         """
+        if not survey.is_askable(slot, ctx.deps.answers):
+            message = (
+                f"{slot!r} is not being asked yet. Call get_survey_state and "
+                "fill the slot it reports as next."
+            )
+            ctx.deps.errors.append(message)
+            return {"ok": False, "error": message, "state": survey.survey_state(ctx.deps.answers)}
+
         try:
             cleaned = survey.validate_slot(slot, value)
         except survey.SlotError as exc:

@@ -61,7 +61,37 @@ def test_the_survey_walks_the_sections_in_order():
 def test_a_person_slot_exists_for_each_household_member():
     answers = fill({"num_people": 3})
     missing = survey_state(answers)["missing"]
-    assert missing == ["person_1", "person_2", "person_3"]
+    assert missing[:3] == ["person_1", "person_2", "person_3"]
+    # Later sections stay on the list, so progress is measured against the
+    # real total rather than collapsing to whatever is known so far.
+    assert "pets" in missing and "zip_code" in missing
+
+
+def test_a_skipped_person_is_still_asked_for():
+    """Answering person 2 but not person 1 must not strand the survey."""
+    answers = fill({"num_people": 2, "person_2": "older_adult"})
+    state = survey_state(answers)
+    assert state["next_slot"] == "person_1"
+    assert not state["done"]
+
+
+def test_slots_cannot_be_answered_out_of_order():
+    from app.survey import is_askable
+
+    answers = fill({"num_people": 2})
+    # Baseline questions do not exist until we know who lives there.
+    assert not is_askable("water", answers)
+    assert not is_askable("backup_power", answers)
+    # Nor does a person who is not in the household.
+    assert not is_askable("person_5", answers)
+    assert is_askable("person_1", answers)
+    assert is_askable("pets", answers)
+
+
+def test_progress_reflects_the_real_total_once_the_size_is_known():
+    answers = fill({"num_people": 2, "person_1": "adult"})
+    state = survey_state(answers)
+    assert state["progress"] < 0.5, "two of many answered, not two of three"
 
 
 # --- conditional slots ----------------------------------------------------

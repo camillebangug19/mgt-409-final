@@ -4,9 +4,9 @@
   --paper: #f6f4ef;
   --card: #ffffff;
   --line: #ddd8cd;
-  --accent: #1f6f54;
+  --accent: #0f7a52;
   --accent-soft: #e4f0ea;
-  --accent-ink: #11402f;
+  --accent-ink: #0b5c3e;
   --focus: #0b5fd1;
 
   color-scheme: light;
@@ -163,4 +163,144 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+
+/* --- score reveal ------------------------------------------------------ */
+.reveal { text-align: center; }
+
+.bag-wrap {
+  position: relative;
+  display: inline-block;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.bag-score {
+  font-size: 3.2rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--accent-ink);
+}
+.bag-score .outof { font-size: 1.1rem; font-weight: 600; color: var(--ink-soft); }
+.bag-label { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.25rem; }
+
+.bag-fill { transition: y 900ms cubic-bezier(0.22, 1, 0.36, 1), height 900ms cubic-bezier(0.22, 1, 0.36, 1); }
+
+.float-gain {
+  position: absolute;
+  top: 10%;
+  right: -8px;
+  font-weight: 700;
+  color: var(--accent);
+  animation: floatUp 1.6s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes floatUp {
+  0% { opacity: 0; transform: translateY(8px); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-28px); }
+}
+
+/* --- breakdown meters (single series: earned out of max) ---------------- */
+.breakdown { text-align: left; margin: 1.25rem 0 0.5rem; }
+.breakdown h3 { font-size: 0.95rem; }
+.meter-row { margin-bottom: 0.6rem; }
+.meter-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 0.2rem;
+}
+.meter-head .cat { font-weight: 600; }
+.meter-head .val { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.meter-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--line);
+  overflow: hidden;
+}
+.meter-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent);
+  /* 2px surface gap keeps the fill from fusing with the track end */
+  box-shadow: 0 0 0 2px var(--card);
+  transition: width 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- step cards --------------------------------------------------------- */
+.steps { margin-top: 1.75rem; text-align: left; }
+.step-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 0.9rem;
+}
+.step-top { display: flex; justify-content: space-between; gap: 0.75rem; align-items: start; }
+.step-card h3 { font-size: 1.05rem; margin-bottom: 0.35rem; }
+.gain {
+  flex-shrink: 0;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.why { margin: 0 0 0.6rem; color: var(--ink); }
+.tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.6rem; }
+.tag {
+  font-size: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  color: var(--ink-soft);
+}
+.how-to { margin: 0 0 0.6rem 1.1rem; padding: 0; color: var(--ink-soft); font-size: 0.9rem; }
+.how-to li { margin-bottom: 0.25rem; }
+.sources { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.7rem; }
+.source-chip {
+  font-size: 0.75rem;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
+.source-chip:hover { border-color: var(--accent); }
+.cheap { font-size: 0.85rem; color: var(--ink-soft); margin: 0 0 0.6rem; }
+.cheap ul { margin: 0.25rem 0 0 1.1rem; padding: 0; }
+.medical { font-size: 0.8rem; color: var(--ink-soft); font-style: italic; margin-bottom: 0.6rem; }
+
+.self-check {
+  border-top: 1px solid var(--line);
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+}
+.self-check label {
+  display: flex;
+  gap: 0.5rem;
+  align-items: start;
+  margin-bottom: 0.45rem;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+.self-check input { margin-top: 0.2rem; width: 1rem; height: 1rem; accent-color: var(--accent); }
+.self-check-actions { display: flex; gap: 0.5rem; margin-top: 0.6rem; }
+
+.resources { margin-top: 1.5rem; text-align: left; font-size: 0.9rem; }
+.resources ul { margin: 0.35rem 0 0 1.1rem; padding: 0; }
+.resources a { color: var(--accent-ink); }
+
+.done-banner {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-radius: 12px;
+  padding: 1rem;
+  font-weight: 600;
+  margin-top: 1rem;
 }

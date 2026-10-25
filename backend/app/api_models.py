@@ -14,6 +14,11 @@ class ChatRequest(BaseModel):
     message: str = Field(default="", max_length=MAX_MESSAGE_CHARS)
 
 
+class CompleteStepRequest(BaseModel):
+    session_id: str
+    checked: list[str] = Field(default_factory=list, description="Self-check item ids ticked.")
+
+
 class ChatResponse(BaseModel):
     message: str
     quick_replies: list[str] = []

@@ -8,8 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import chat, db
-from .api_models import ChatRequest, ChatResponse, SessionResponse
+from . import chat, db, plan
+from .api_models import ChatRequest, ChatResponse, CompleteStepRequest, SessionResponse
 from .config import FRONTEND_DIST, MODEL_NAME
 
 
@@ -53,6 +53,32 @@ async def post_chat(request: ChatRequest) -> ChatResponse:
         if not db.get_session(conn, request.session_id):
             raise HTTPException(status_code=404, detail="Unknown session")
         return await chat.run_turn(conn, request.session_id, request.message)
+
+
+@app.get("/api/plan")
+async def get_plan(session_id: str) -> dict:
+    """The score reveal and the three next steps."""
+    with db.session_db() as conn:
+        if not db.get_session(conn, session_id):
+            raise HTTPException(status_code=404, detail="Unknown session")
+        result = await plan.build_plan(conn, session_id)
+        db.record_score(conn, session_id, result["score"])
+        db.log_event(conn, session_id, "score_shown", {"score": result["score"]})
+        return result
+
+
+@app.post("/api/steps/{step_id}/complete")
+async def complete_step(step_id: str, request: CompleteStepRequest) -> dict:
+    """Tick off a step's self-check, re-score, and hand back the next steps."""
+    with db.session_db() as conn:
+        if not db.get_session(conn, request.session_id):
+            raise HTTPException(status_code=404, detail="Unknown session")
+        try:
+            outcome = plan.complete_step(conn, request.session_id, step_id, request.checked)
+        except KeyError:
+            raise HTTPException(status_code=404, detail=f"Unknown step {step_id}")
+        refreshed = await plan.build_plan(conn, request.session_id)
+        return {**refreshed, "completion": outcome}
 
 
 # --- the built frontend ---------------------------------------------------
