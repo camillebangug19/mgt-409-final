@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BACKEND_DIR = REPO_ROOT / "backend"
 KB_DIR = BACKEND_DIR / "kb"
+FRONTEND_DIST = REPO_ROOT / "frontend" / "dist"
 
 ENV_SEARCH_PATHS = (REPO_ROOT / ".env", REPO_ROOT.parent / ".env")
 

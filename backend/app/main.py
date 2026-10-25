@@ -5,10 +5,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from . import chat, db
 from .api_models import ChatRequest, ChatResponse, SessionResponse
-from .config import MODEL_NAME
+from .config import FRONTEND_DIST, MODEL_NAME
 
 
 @asynccontextmanager
@@ -51,3 +53,19 @@ async def post_chat(request: ChatRequest) -> ChatResponse:
         if not db.get_session(conn, request.session_id):
             raise HTTPException(status_code=404, detail="Unknown session")
         return await chat.run_turn(conn, request.session_id, request.message)
+
+
+# --- the built frontend ---------------------------------------------------
+# FastAPI serves the React bundle, so the whole app runs on one port and one
+# URL in production (REQUIREMENTS.md 11). Mounted last so /api/* wins.
+
+if (FRONTEND_DIST / "index.html").is_file():
+    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
+
+    @app.get("/{path:path}", include_in_schema=False)
+    def serve_frontend(path: str) -> FileResponse:
+        """Serve the SPA, falling back to index.html for client-side routes."""
+        candidate = (FRONTEND_DIST / path).resolve()
+        if path and candidate.is_file() and candidate.is_relative_to(FRONTEND_DIST.resolve()):
+            return FileResponse(candidate)
+        return FileResponse(FRONTEND_DIST / "index.html")
