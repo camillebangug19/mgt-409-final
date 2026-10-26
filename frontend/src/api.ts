@@ -1,4 +1,4 @@
-import type { ChatTurn, Plan, SessionStatus } from './types'
+import type { ChatTurn, Plan, SessionStatus, UsageSummary } from './types'
 
 // In production FastAPI serves this bundle, so the API is same-origin.
 const BASE = import.meta.env.DEV ? 'http://localhost:8000' : ''
@@ -66,4 +66,10 @@ export function completeStep(sessionId: string, stepId: string, checked: string[
     session_id: sessionId,
     checked,
   })
+}
+
+export async function fetchUsage(sessionId: string): Promise<UsageSummary> {
+  const response = await fetch(`${BASE}/api/usage?session_id=${encodeURIComponent(sessionId)}`)
+  if (!response.ok) throw new Error(`/api/usage failed (${response.status})`)
+  return response.json() as Promise<UsageSummary>
 }

@@ -104,3 +104,16 @@ def scripted_coach_model(invent: bool = False) -> FunctionModel:
         return ModelResponse(parts=[ToolCallPart("final_result", {"notes": notes})])
 
     return FunctionModel(respond)
+
+
+def looping_model() -> FunctionModel:
+    """Never produces a final result: calls a tool forever.
+
+    Used to prove UsageLimits stops a runaway turn rather than spending
+    the budget on it (REQUIREMENTS.md 13.2 #7).
+    """
+
+    def respond(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        return ModelResponse(parts=[ToolCallPart("get_survey_state", {})])
+
+    return FunctionModel(respond)

@@ -4,6 +4,7 @@ import type { Plan } from '../types'
 import { Breakdown } from './Breakdown'
 import { GoBag } from './GoBag'
 import { StepCard } from './StepCard'
+import { CostPanel } from './CostPanel'
 import { Sunny } from './Sunny'
 
 type Props = {
@@ -161,6 +162,8 @@ export function ScoreReveal({ sessionId, onRestart }: Props) {
       </section>
 
       {error && <p className="error">{error}</p>}
+
+      <CostPanel sessionId={sessionId} refreshKey={plan.completed_step_ids.length} />
 
       <p className="disclaimer">{plan.disclaimer}</p>
 

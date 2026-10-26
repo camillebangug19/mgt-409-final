@@ -27,6 +27,10 @@ class ChatResponse(BaseModel):
     next_slot: str | None = None
     # Which Sunny face to show beside this message.
     mood: str = "hi"
+    # Set when the pre-filter redirected this message.
+    flagged: bool = False
+    # After repeated off-topic turns the UI offers chips only.
+    chips_only: bool = False
     section: str | None = None
     sections: list[str] = []
     section_index: int = 0

@@ -105,3 +105,26 @@ export type SessionStatus = {
   state?: string | null
   started_at?: string
 }
+
+export type AgentUsage = {
+  agent: string
+  input_tokens: number
+  cached_tokens: number
+  output_tokens: number
+  runs: number
+  cost_usd: number
+}
+
+export type UsageSummary = {
+  agents: AgentUsage[]
+  totals: AgentUsage
+  model: string
+  rates: { are_estimates: boolean; note: string }
+  projections: {
+    per_session: number
+    per_100_users: number
+    per_10000_users: number
+    assumption: string
+  }
+  budget: { used_today: number; daily_limit: number }
+}

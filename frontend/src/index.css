@@ -496,3 +496,29 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   .sunny, .sunny-rays, .sunny-wave, .sunny-cheer,
   .sunny-think circle, .sunny-cheer .sunny-sparkle { animation: none !important; }
 }
+
+/* --- run-cost panel ----------------------------------------------------- */
+.cost-panel { margin-top: 1.6rem; text-align: left; }
+.cost-toggle {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: var(--ink-soft);
+}
+.cost-toggle:hover { background: none; color: var(--blue-ink); }
+.cost-body {
+  margin-top: 0.6rem;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 0.85rem;
+  background: var(--card);
+}
+.cost-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.cost-table caption { text-align: left; margin-bottom: 0.5rem; }
+.cost-table th, .cost-table td { padding: 0.3rem 0.35rem; text-align: right; }
+.cost-table th[scope='row'], .cost-table thead th:first-child { text-align: left; }
+.cost-table thead th { border-bottom: 1.5px solid var(--line); color: var(--ink-soft); font-weight: 650; }
+.cost-table tfoot th, .cost-table tfoot td { border-top: 1.5px solid var(--line); font-weight: 700; }
+.cost-table td { font-variant-numeric: tabular-nums; }

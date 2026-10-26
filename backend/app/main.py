@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import chat, db, plan, survey
+from . import chat, db, events, limits, plan, survey
 from .api_models import ChatRequest, ChatResponse, CompleteStepRequest, SessionResponse
 from .config import FRONTEND_DIST, MODEL_NAME
 
@@ -30,6 +30,13 @@ app.add_middleware(
 )
 
 
+@app.get("/api/usage")
+def usage(session_id: str) -> dict:
+    """Tokens and estimated cost for this session (REQUIREMENTS.md 8)."""
+    with db.session_db() as conn:
+        return plan.usage_summary(conn, session_id)
+
+
 @app.get("/api/health")
 def health() -> dict:
     """Liveness check for Render (REQUIREMENTS.md 11)."""
@@ -42,7 +49,7 @@ def start_session() -> SessionResponse:
     session_id = str(uuid.uuid4())
     with db.session_db() as conn:
         db.create_session(conn, session_id)
-        db.log_event(conn, session_id, "survey_started")
+        events.log(conn, session_id, events.SURVEY_STARTED)
     return SessionResponse(session_id=session_id)
 
 
@@ -83,7 +90,10 @@ async def post_chat(request: ChatRequest) -> ChatResponse:
     with db.session_db() as conn:
         if not db.get_session(conn, request.session_id):
             raise HTTPException(status_code=404, detail="Unknown session")
-        return await chat.run_turn(conn, request.session_id, request.message)
+        try:
+            return await chat.run_turn(conn, request.session_id, request.message)
+        except chat.BudgetExceeded as exc:
+            raise HTTPException(status_code=429, detail=str(exc))
 
 
 @app.get("/api/plan")
@@ -92,9 +102,11 @@ async def get_plan(session_id: str) -> dict:
     with db.session_db() as conn:
         if not db.get_session(conn, session_id):
             raise HTTPException(status_code=404, detail="Unknown session")
+        if limits.budget_exceeded(conn):
+            raise HTTPException(status_code=429, detail=limits.BUDGET_MESSAGE)
         result = await plan.build_plan(conn, session_id)
         db.record_score(conn, session_id, result["score"])
-        db.log_event(conn, session_id, "score_shown", {"score": result["score"]})
+        events.log(conn, session_id, events.SCORE_SHOWN, {"score": result["score"]})
         return result
 
 

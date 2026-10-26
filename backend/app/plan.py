@@ -6,7 +6,7 @@ Python picks the steps and the points. The Coach only adds wording, and the
 verifier drops anything it invented.
 """
 
-from . import chat, db, kb, survey, verifier
+from . import chat, db, events, kb, limits, pricing, survey, verifier
 from .agents.coach import CoachDeps, build_coach_agent, coach_prompt
 from .models import HouseholdProfile
 from .scoring import calc_quantities, rank_next_steps, score_readiness
@@ -62,6 +62,7 @@ async def _coach_notes(
     profile: HouseholdProfile,
     candidates: list[dict],
     model=None,
+    conn_for_usage=None,
 ) -> tuple[dict[str, str], list[str]]:
     """Personalised wording for each candidate, verified. Falls back to the KB."""
     flagged: list[str] = []
@@ -70,8 +71,11 @@ async def _coach_notes(
     if wanted:
         try:
             result = await get_coach(model).run(
-                coach_prompt(profile, wanted), deps=CoachDeps(profile=profile)
+                coach_prompt(profile, wanted),
+                deps=CoachDeps(profile=profile),
+                usage_limits=limits.COACH_LIMITS,
             )
+            limits.record_run_usage(conn_for_usage, session_id, "coach", result.usage)
             items = [{"step_id": n.step_id, "why": n.why} for n in result.output.notes]
             kept, plan_flags = verifier.verify_plan(items, {c["id"] for c in wanted})
             flagged.extend(plan_flags)
@@ -101,7 +105,7 @@ async def build_plan(conn, session_id: str, model=None) -> dict:
     steps = rank_next_steps(profile, baseline, completed)
 
     candidates = [{"id": s.id, "title": s.title, "points_gain": s.points_gain} for s in steps]
-    notes, flagged = await _coach_notes(session_id, profile, candidates, model)
+    notes, flagged = await _coach_notes(session_id, profile, candidates, model, conn)
 
     step_payload = []
     for step in steps:
@@ -166,7 +170,7 @@ def complete_step(conn, session_id: str, step_id: str, checked_item_ids: list[st
         db.complete_step(conn, session_id, step_id)
 
     db.record_score(conn, session_id, after)
-    db.log_event(conn, session_id, "step_completed", {
+    events.log(conn, session_id, events.STEP_COMPLETED, {
         "step_id": step_id,
         "items": credited,
         "score_before": before,
@@ -175,3 +179,46 @@ def complete_step(conn, session_id: str, step_id: str, checked_item_ids: list[st
 
     return {"step_id": step_id, "score_before": before, "score_after": after,
             "delta": round(after - before, 2), "credited": credited}
+
+
+def usage_summary(conn, session_id: str) -> dict:
+    """Per-agent tokens and estimated dollars for the run-cost panel."""
+    rows = conn.execute(
+        """SELECT agent,
+                  SUM(input_tokens)  AS input_tokens,
+                  SUM(cached_tokens) AS cached_tokens,
+                  SUM(output_tokens) AS output_tokens,
+                  COUNT(*)           AS runs
+             FROM usage WHERE session_id = ? GROUP BY agent""",
+        (session_id,),
+    ).fetchall()
+
+    agents = []
+    totals = {"input_tokens": 0, "cached_tokens": 0, "output_tokens": 0, "runs": 0, "cost_usd": 0.0}
+    for row in rows:
+        entry = {
+            "agent": row["agent"],
+            "input_tokens": int(row["input_tokens"] or 0),
+            "cached_tokens": int(row["cached_tokens"] or 0),
+            "output_tokens": int(row["output_tokens"] or 0),
+            "runs": int(row["runs"] or 0),
+        }
+        entry["cost_usd"] = pricing.cost_usd(
+            entry["input_tokens"], entry["cached_tokens"], entry["output_tokens"]
+        )
+        for key in ("input_tokens", "cached_tokens", "output_tokens", "runs", "cost_usd"):
+            totals[key] += entry[key]
+        agents.append(entry)
+
+    totals["cost_usd"] = round(totals["cost_usd"], 6)
+    return {
+        "agents": agents,
+        "totals": totals,
+        "model": pricing.MODEL_NAME,
+        "rates": pricing.RATES,
+        "projections": pricing.projections(totals["cost_usd"]),
+        "budget": {
+            "used_today": limits.tokens_used_today(conn),
+            "daily_limit": limits.daily_token_budget(),
+        },
+    }

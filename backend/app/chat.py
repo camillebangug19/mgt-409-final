@@ -3,15 +3,42 @@
 import json
 from typing import Any
 
-from pydantic_ai.messages import ModelMessage
+from pydantic_ai.messages import ModelMessage, ModelRequest, UserPromptPart
 
-from . import db, survey
+from . import db, events, limits, safety, survey
 from .agents.survey_bot import SurveyDeps, build_survey_agent, user_prompt
 from .api_models import ChatResponse
 
 # Message history per session, kept in memory. Restarting the server only
 # costs conversational context; the answers themselves live in SQLite.
 _HISTORY: dict[str, list[ModelMessage]] = {}
+
+# Resending the whole conversation every turn makes input tokens grow with the
+# square of the turn count: a 24-turn survey measured 647k input tokens. The
+# survey state is reloaded from SQLite each turn anyway, so history is only
+# needed so Sunny can refer back to what was just said. Keeping the last few
+# exchanges is enough for that.
+HISTORY_TURNS = 4
+
+
+def trim_history(messages: list[ModelMessage] | None, turns: int = HISTORY_TURNS):
+    """Keep only the last `turns` user exchanges, cut on turn boundaries.
+
+    Slicing mid-turn would orphan a tool call from its result, so the cut is
+    always made at a user prompt.
+    """
+    if not messages:
+        return messages
+
+    boundaries = [
+        index
+        for index, message in enumerate(messages)
+        if isinstance(message, ModelRequest)
+        and any(isinstance(part, UserPromptPart) for part in message.parts)
+    ]
+    if len(boundaries) <= turns:
+        return messages
+    return messages[boundaries[-turns] :]
 
 _agent = None
 
@@ -71,20 +98,55 @@ def to_response(
     )
 
 
+class BudgetExceeded(Exception):
+    """The global daily token budget is gone. Surfaced as a 429."""
+
+
 async def run_turn(conn, session_id: str, message: str, model=None) -> ChatResponse:
     """One user message in, one bot turn out."""
+    if limits.budget_exceeded(conn):
+        raise BudgetExceeded(limits.BUDGET_MESSAGE)
+
     answers = load_answers(conn, session_id)
     state = survey.survey_state(answers)
+
+    # The turn cap stops a session looping forever (REQUIREMENTS.md 10).
+    if limits.turn_limit_reached(conn, session_id):
+        return to_response(limits.TURN_LIMIT_MESSAGE, [], state, state["done"], "calm")
+
+    # Cheap checks before we pay for a model call.
+    screening = safety.screen(message)
+    if screening.flagged:
+        conn.execute(
+            "UPDATE sessions SET offtopic_count = offtopic_count + 1 WHERE session_id = ?",
+            (session_id,),
+        )
+        conn.execute(
+            "UPDATE sessions SET turn_count = turn_count + 1 WHERE session_id = ?",
+            (session_id,),
+        )
+        row = db.get_session(conn, session_id)
+        nudges = int(row["offtopic_count"]) if row else 1
+        question = state["next_question_about"] or "how ready your household is"
+        reply = screening.note + f"Back to it: {question.split('.')[0]}."
+        # After three nudges stop offering a free-text box (REQUIREMENTS.md 10).
+        quick = state["quick_replies"] if nudges >= safety.OFFTOPIC_LIMIT else []
+        response = to_response(reply, quick, state, False, "calm")
+        response.chips_only = nudges >= safety.OFFTOPIC_LIMIT
+        response.flagged = True
+        return response
 
     deps = SurveyDeps(answers=dict(answers))
     agent = get_agent(model)
 
     result = await agent.run(
-        user_prompt(message, state),
+        user_prompt(screening.message, state),
         deps=deps,
-        message_history=_HISTORY.get(session_id),
+        message_history=trim_history(_HISTORY.get(session_id)),
+        usage_limits=limits.SURVEY_LIMITS,
     )
     _HISTORY[session_id] = result.all_messages()
+    limits.record_run_usage(conn, session_id, "survey_bot", result.usage)
 
     save_answers(conn, session_id, deps.answers, deps.recorded)
 
@@ -92,7 +154,7 @@ async def run_turn(conn, session_id: str, message: str, model=None) -> ChatRespo
     done = new_state["done"]
     if done and not db.get_session(conn, session_id)["survey_done"]:
         conn.execute("UPDATE sessions SET survey_done = 1 WHERE session_id = ?", (session_id,))
-        db.log_event(conn, session_id, "survey_completed")
+        events.log(conn, session_id, events.SURVEY_COMPLETED)
 
     conn.execute(
         "UPDATE sessions SET turn_count = turn_count + 1 WHERE session_id = ?", (session_id,)

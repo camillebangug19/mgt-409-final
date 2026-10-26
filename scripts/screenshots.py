@@ -111,6 +111,15 @@ with sync_playwright() as pw:
     page.screenshot(path=OUT/"6-celebration.png", full_page=True)
     page.wait_for_timeout(3500)
     page.screenshot(path=OUT/"6-score-up.png", full_page=True)
+    # The run-cost panel, with real measured tokens.
+    page.locator(".cost-toggle").click()
+    page.wait_for_selector(".cost-table tfoot", timeout=30000)
+    page.locator(".cost-panel").scroll_into_view_if_needed()
+    page.screenshot(path=OUT/"7-cost-panel.png", full_page=True)
+    rows = page.locator(".cost-table tbody tr").all_inner_texts()
+    print("7 cost panel:", [r.replace("\n", " ") for r in rows], flush=True)
+    print("   total:", page.locator(".cost-table tfoot tr").inner_text().replace("\n", " "), flush=True)
+
     print("6 score after:", page.locator(".bag-score").inner_text().replace("\n"," "),
           "|", page.locator(".bag-label").inner_text(), flush=True)
     print("   new steps:", page.locator(".step-card h3").all_inner_texts(), flush=True)
