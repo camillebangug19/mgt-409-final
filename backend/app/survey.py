@@ -45,6 +45,12 @@ BASELINE_PROMPTS = {
 
 MAX_PEOPLE = 12
 
+# Which person has a need is a nice-to-have: scoring only asks whether anyone
+# does, and build_profile guesses sensibly. Asking costs a turn for nothing.
+NO_FOLLOW_UP = (
+    " If they say who, record it, but never ask a follow-up just to find out who."
+)
+
 
 class SlotError(ValueError):
     """Raised when a value does not fit the slot's schema."""
@@ -377,12 +383,12 @@ def question_hint(slot: str, answers: dict[str, Any]) -> str:
         )
     if slot == "mobility_needs":
         return ("whether anyone uses a cane, walker or wheelchair, is bedbound, "
-                "or would need help to evacuate, and which person that is")
+                "or would need help to evacuate." + NO_FOLLOW_UP)
     if slot == "power_equipment":
         return ("whether anyone uses equipment that needs electricity "
-                "(oxygen, CPAP, dialysis, powered wheelchair, other), and which person")
+                "(oxygen, CPAP, dialysis, powered wheelchair, other)." + NO_FOLLOW_UP)
     if slot == "daily_meds":
-        return "whether anyone takes daily medication, and which person"
+        return "whether anyone takes daily medication." + NO_FOLLOW_UP
     if slot == "infant_feeding_method":
         return "how the infant is fed: breast, formula or both"
     if slot == "pets":

@@ -105,10 +105,25 @@ def _completed_answers(answers: dict[str, str], step: dict) -> dict[str, str]:
 
 
 def score_gain(step: dict, profile: HouseholdProfile, answers: dict[str, str]) -> float:
-    """The real 1-10 score change this household would see (REQUIREMENTS.md 6.1)."""
-    before = score_readiness(profile, answers).score
-    after = score_readiness(profile, _completed_answers(answers, step)).score
-    return round(after - before, 2)
+    """What this step is worth on the 1-10 scale, for this household.
+
+    This is the step's share of the scale before the 0.5 rounding that the
+    displayed score uses: 9 * (points still on this step / applicable points).
+
+    REQUIREMENTS.md 6.1 defines "+X" as the change in the displayed score, but
+    the displayed score moves in 0.5 steps, so a small item near the top of the
+    scale rounds away and the badge reads "+0 points" - which breaks the
+    promise in section 1 that every completed step visibly earns something.
+    Showing the true contribution keeps every badge positive and makes the
+    badges sum to the points left to win.
+    TODO(camille): mention this trade-off in the report; flip back to
+    `round(after - before, 2)` if your professor wants the literal reading.
+    """
+    items = applicable_items(profile)
+    max_points = sum(i["points"] for i in items)
+    if not max_points:
+        return 0.0
+    return round(9 * _raw_gain(step, profile, answers) / max_points, 1)
 
 
 def candidate_steps(

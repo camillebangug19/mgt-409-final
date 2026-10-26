@@ -64,8 +64,9 @@ export function StepCard({ step, busy, onComplete }: Props) {
             href={source.source_url}
             target="_blank"
             rel="noopener noreferrer"
+            title={`${source.title} — ${source.publisher}`}
           >
-            {source.publisher} ↗
+            {source.title} ↗
           </a>
         ))}
       </div>

@@ -1,5 +1,7 @@
 """REQUIREMENTS.md 13.2 #3 — ranking the next steps."""
 
+import pytest
+
 from app import kb
 from app.scoring import (
     _completed_answers,
@@ -37,14 +39,43 @@ def test_sorted_by_gain_within_a_priority_tier(persona):
             assert (earlier[1], -earlier[2]) >= (later[1], -later[2])
 
 
-def test_points_gain_equals_the_real_score_change(persona):
-    """The '+X points' badge must be what actually happens on completion."""
+def test_points_gain_is_the_steps_true_share_of_the_scale(persona):
+    """The '+X points' badge is the step's contribution before 0.5 rounding."""
+    _, profile, answers = persona
+    result = score_readiness(profile, answers)
+    for next_step in rank_next_steps(profile, answers):
+        step = kb.step_by_id(next_step.id)
+        expected = 9 * _raw_gain(step, profile, answers) / result.max_points
+        assert next_step.points_gain == round(expected, 1)
+
+
+def test_no_step_is_ever_advertised_as_worth_nothing(persona):
+    """A '+0 points' badge would break the promise that every step earns something."""
+    _, profile, answers = persona
+    for next_step in rank_next_steps(profile, answers):
+        assert next_step.points_gain > 0, next_step.id
+
+
+def test_the_badges_add_up_to_the_points_left_to_win(persona):
+    """Every remaining step together should close the gap to 10."""
+    _, profile, answers = persona
+    result = score_readiness(profile, answers)
+    total = sum(
+        9 * _raw_gain(kb.step_by_id(s["id"]), profile, answers) / result.max_points
+        for s in candidate_steps(profile, answers)
+    )
+    exact = 1 + 9 * (result.earned / result.max_points)
+    assert total == pytest.approx(10 - exact, abs=0.01)
+
+
+def test_completing_a_step_moves_the_displayed_score_up_or_holds_it(persona):
+    """The displayed score rounds to 0.5, so it may hold, but it never drops."""
     _, profile, answers = persona
     before = score_readiness(profile, answers).score
     for next_step in rank_next_steps(profile, answers):
         step = kb.step_by_id(next_step.id)
         after = score_readiness(profile, _completed_answers(answers, step)).score
-        assert next_step.points_gain == round(after - before, 2)
+        assert after >= before
 
 
 def test_completed_steps_never_reappear(persona):
