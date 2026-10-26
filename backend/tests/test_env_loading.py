@@ -67,3 +67,27 @@ def test_the_real_search_paths_are_resolved_from_the_file(tmp_path):
     assert first == config.REPO_ROOT / ".env"
     assert second == config.REPO_ROOT.parent / ".env"
     assert first.is_absolute() and second.is_absolute()
+
+
+def test_the_key_can_come_from_the_environment_with_no_dotenv(tmp_path, monkeypatch):
+    """How it works on Render: no .env file, PORTKEY_API_KEY set in the dashboard."""
+    monkeypatch.setenv("PORTKEY_API_KEY", "from-the-platform")
+    paths = (tmp_path / "repo" / ".env", tmp_path / ".env")
+    assert not paths[0].exists() and not paths[1].exists()
+
+    assert config.get_portkey_api_key(paths) == "from-the-platform"
+
+
+def test_a_dotenv_does_not_override_the_platform_environment(tmp_path, monkeypatch):
+    """A stale local .env must not win over what the host injected."""
+    monkeypatch.setenv("PORTKEY_API_KEY", "from-the-platform")
+    repo_root = tmp_path / "repo"
+    _write_env(repo_root, "from-a-stale-file")
+
+    assert config.get_portkey_api_key((repo_root / ".env", tmp_path / ".env")) == "from-the-platform"
+
+
+def test_a_blank_key_is_treated_as_missing(tmp_path, monkeypatch):
+    monkeypatch.setenv("PORTKEY_API_KEY", "   ")
+    with pytest.raises(RuntimeError):
+        config.get_portkey_api_key((tmp_path / ".env",))

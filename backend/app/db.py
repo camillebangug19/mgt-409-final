@@ -11,6 +11,8 @@ from pathlib import Path
 
 from .config import db_path
 
+__all__ = ["db_path", "connect", "init_db", "session_db"]
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS sessions (
     session_id   TEXT PRIMARY KEY,

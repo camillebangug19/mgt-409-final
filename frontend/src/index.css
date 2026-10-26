@@ -412,46 +412,11 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 /* --- Sunny the mascot (REQUIREMENTS.md 18.1) ---------------------------- */
-/* Clipped to its own box by default so chat avatars cannot touch the bubble
-   text. The big Sunnys get room to bob and bounce. */
+/* Static poses, one per mood. Camille asked for stills rather than the idle
+   bob and rotating rays in 18.1: simpler, and nothing moves behind the text. */
 .sunny { display: block; }
 .landing-hero .sunny,
-.reveal-sunny .sunny,
-.sunny-float .sunny { overflow: visible; }
-
-/* Gentle idle bob and slowly turning rays. Both stop for reduced motion. */
-.sunny { animation: sunnyBob 3s ease-in-out infinite; }
-@keyframes sunnyBob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-
-.sunny-rays {
-  transform-box: view-box;
-  transform-origin: 110px 110px;
-  animation: sunnySpin 40s linear infinite;
-}
-@keyframes sunnySpin { to { transform: rotate(360deg); } }
-
-.sunny-cheer { animation: sunnyCheer 700ms cubic-bezier(0.34, 1.56, 0.64, 1), sunnyBob 3s ease-in-out infinite 700ms; }
-@keyframes sunnyCheer {
-  0% { transform: scale(1) translateY(0); }
-  40% { transform: scale(1.12) translateY(-8px); }
-  100% { transform: scale(1) translateY(0); }
-}
-.sunny-cheer .sunny-sparkle { animation: sparkleTwinkle 1.4s ease-in-out infinite; }
-@keyframes sparkleTwinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-
-.sunny-wave { transform-box: view-box; transform-origin: 170px 130px; animation: sunnyWave 1.8s ease-in-out infinite; }
-@keyframes sunnyWave {
-  0%, 100% { transform: translate(60px, 20px) rotate(40deg); }
-  50% { transform: translate(60px, 20px) rotate(18deg); }
-}
-
-.sunny-think circle { animation: thinkPulse 1.5s ease-in-out infinite; }
-.sunny-think circle:nth-child(2) { animation-delay: 0.2s; }
-.sunny-think circle:nth-child(3) { animation-delay: 0.4s; }
-@keyframes thinkPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+.reveal-sunny .sunny { overflow: visible; }
 
 /* --- Sunny in place ----------------------------------------------------- */
 /* The waving hand reaches the right edge of Sunny's box, so the headline
@@ -490,11 +455,6 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   border-left: 1.5px solid var(--line);
   border-bottom: 1.5px solid var(--line);
   transform: rotate(45deg);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sunny, .sunny-rays, .sunny-wave, .sunny-cheer,
-  .sunny-think circle, .sunny-cheer .sunny-sparkle { animation: none !important; }
 }
 
 /* --- run-cost panel ----------------------------------------------------- */
