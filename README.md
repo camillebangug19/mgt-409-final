@@ -1,9 +1,7 @@
 # ReadyHome
 
-**Live app:** `TODO(camille): paste the Render URL here on submission day.`
+**Live app:** not hosted. Clone and run it locally — the steps below were rehearsed from a fresh clone and take under a minute.
 **Repo:** https://github.com/camillebangug19/mgt-409-final
-
-> The free Render tier sleeps when idle, so **the first load can take about 30 seconds**. Give it a moment before deciding it is broken.
 
 A friendly survey bot that checks how ready your household is for a disaster, gives you a
 readiness score out of 10, and suggests three next steps that each visibly raise it.

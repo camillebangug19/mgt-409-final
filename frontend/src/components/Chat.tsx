@@ -3,6 +3,7 @@ import { sendMessage } from '../api'
 import type { ChatTurn, Message } from '../types'
 import { ProgressStrip } from './ProgressStrip'
 import { StatePicker } from './StatePicker'
+import { BrandBar } from './BrandBar'
 import { Sunny } from './Sunny'
 
 const MAX_CHARS = 500
@@ -71,6 +72,7 @@ export function Chat({ sessionId, onDone }: Props) {
 
   return (
     <main>
+      <BrandBar />
       <ProgressStrip sections={turn?.sections ?? []} activeIndex={turn?.section_index ?? 0} />
 
       <section className="chat">

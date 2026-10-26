@@ -18,6 +18,7 @@ from diagram import DIAGRAM  # noqa: E402
 
 REVEAL = "5.1.0"
 T = D.tokenomics()
+TESTER = D.tester()
 SHIP, PREV = T[D.SHIPPED], T[D.BEFORE]
 su, pu = SHIP["usage"]["totals"], PREV["usage"]["totals"]
 proj = SHIP["usage"]["projections"]
@@ -109,30 +110,22 @@ SLIDES = f"""
   </div>
   <p class="sub">{D.AUTHOR} · {D.COURSE}</p>
   <p class="links"><strong>Repo:</strong> <a href="{D.REPO_URL}">{D.REPO_URL}</a> &nbsp;·&nbsp;
-     <strong>App:</strong> {fill("live URL, or “clone and run — see README”")}</p>
+     <strong>App:</strong> clone and run, see README</p>
 </section>
 
 <section>
   <h2>One adult. A toddler, a grandparent with a walker, and a dog.<br>The power's out.</h2>
-  <ul>
-    <li>Hurricane Sandy: my neighbourhood lost power for a week. <em>Neighbours got us through.</em></li>
-    <li><em>71%</em> of people expect help from friends or family after a disaster.
-        What about families who don't have that?</li>
-    <li>Isolated or newly arrived families may have no one to call — and no signal to call with.</li>
-  </ul>
-  <p class="sub">Source: FEMA 2024 National Household Survey</p>
-</section>
-
-<section>
-  <h2>Mixed households are the hardest case</h2>
+  <p>Hurricane Sandy: my neighbourhood lost power for a week. <em>Neighbours got us through.</em>
+     <em>71%</em> of people expect help from friends or family after a disaster — but isolated
+     or newly arrived families may have no one to call, and no signal to call with.</p>
   <div class="kpis">
     <div class="kpi"><span class="v">71%</span><span class="l">of Katrina deaths were people over 65</span></div>
     <div class="kpi"><span class="v">13M</span><span class="l">US adults 50+ would need help evacuating</span></div>
     <div class="kpi"><span class="v">44%</span><span class="l">who stayed did so because of pets</span></div>
     <div class="kpi"><span class="v">26%</span><span class="l">say preparing costs too much — the #1 barrier</span></div>
   </div>
-  <p class="sub">CDC <em>Preventing Chronic Disease</em> (2008) · Australian Journal of Emergency
-     Management (2015) · FEMA 2024</p>
+  <p class="sub">CDC <em>Preventing Chronic Disease</em> (2008) · Australian Journal of
+     Emergency Management (2015) · FEMA National Household Survey (2024)</p>
 </section>
 
 <section>
@@ -227,16 +220,38 @@ SLIDES = f"""
 </section>
 
 <section>
-  <h2>Impact and what's next</h2>
-  <p><strong>Real tester:</strong> {fill("quote")} — score {fill("before")} → {fill("after")},
-     {fill("minutes")} minutes, {fill("steps completed")} steps done.</p>
-  <p><strong>The promise:</strong> one hour of guided thinking plus two to three hours of gathering
-     turns a herculean evacuation into a manageable one. <span class="sub">(my estimate)</span></p>
-  <p><strong>At scale:</strong> {money(proj["per_10000_users"])}/month reaches 10,000 households —
-     within reach of one county office or a mid-sized nonprofit.</p>
-  <p><strong>Next:</strong> county-level hazards from ZIP → county · all 50 states ·
-     reminders for formula expiry and registry renewal · a shareable plan for caregivers ·
-     Tagalog and Spanish for newly arrived families.</p>
+  <h2>Tested on the person it was built for</h2>
+  <p class="sub">My fiancé — he raises emergency preparedness unprompted, works in the
+     field, and still never knows where to start. {TESTER["turns"]} questions,
+     {TESTER["minutes_to_results"]} minutes to results.</p>
+  <div class="kpis">
+    <div class="kpi"><span class="v">{TESTER["score_before"]} → {TESTER["score_after"]}</span><span class="l">score after one step</span></div>
+    <div class="kpi"><span class="v">{TESTER["minutes_to_results"]} min</span><span class="l">start to results</span></div>
+    <div class="kpi"><span class="v">1</span><span class="l">step done in the session</span></div>
+    <div class="kpi"><span class="v">100%</span><span class="l">survey completion</span></div>
+  </div>
+  <div class="note"><strong>“Wow, I'm realising we have none of this stuff… we should get
+     it together!”</strong><br>
+     <span class="sub">He isn't unaware — he raises this unprompted — and still had almost
+     none of it. The gap was never motivation. It was not knowing where to start.</span></div>
+  <p class="sub"><strong>And what he criticised:</strong> “the name isn't anywhere on the page”
+     <em>(fixed on the spot)</em> · “the chain of questions is redundant” · “it is a little
+     slow” · “should the scores mean something?” · <em>“curious if it works for people who
+     actually have equipment evac needs”</em> — the sharpest one, and still untested.</p>
+</section>
+
+<section>
+  <h2>What's next</h2>
+  <ol>
+    <li><em>Test it with a household that has the needs it was built for</em> — power-dependent
+        equipment, or an infant. My tester named this himself; it outranks every feature below.</li>
+    <li><em>Group the dependent questions</em> and cut the survey below 26 questions</li>
+    <li><em>Give the score a reference point</em> — “most households like yours start around…”</li>
+    <li><em>ZIP → county</em> for county-level hazards and local .gov links · all 50 states</li>
+    <li><em>Reminders</em> (formula expiry, registry renewal) · a <em>shareable plan</em> for
+        caregivers · <em>Tagalog and Spanish</em> for newly arrived families</li>
+  </ol>
+  <p class="sub">Repo: <a href="{D.REPO_URL}">{D.REPO_URL}</a></p>
 </section>
 """
 

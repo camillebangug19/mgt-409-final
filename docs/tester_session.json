@@ -1,0 +1,19 @@
+{
+  "turns": 26,
+  "completed": true,
+  "score_before": 2.5,
+  "score_after": 3.5,
+  "steps_completed": [
+    "meds-7day"
+  ],
+  "household": {
+    "people": [
+      "adult",
+      "adult"
+    ],
+    "pets": 1,
+    "state": "CT",
+    "has_vehicle": true
+  },
+  "minutes_to_results": 6
+}

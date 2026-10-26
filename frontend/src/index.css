@@ -482,3 +482,16 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .cost-table thead th { border-bottom: 1.5px solid var(--line); color: var(--ink-soft); font-weight: 650; }
 .cost-table tfoot th, .cost-table tfoot td { border-top: 1.5px solid var(--line); font-weight: 700; }
 .cost-table td { font-variant-numeric: tabular-nums; }
+
+/* --- brand bar ---------------------------------------------------------- */
+.brandbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0 0.9rem;
+  margin-bottom: 0.9rem;
+  border-bottom: 1.5px solid var(--line);
+}
+.brandname { font-weight: 800; font-size: 1.05rem; color: var(--blue-ink); letter-spacing: -0.01em; }
+.brandtag { font-size: 0.74rem; color: var(--ink-soft); }
+@media (max-width: 420px) { .brandtag { display: none; } }

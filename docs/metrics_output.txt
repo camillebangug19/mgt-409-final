@@ -1,0 +1,35 @@
+ReadyHome metrics
+==============================================
+
+NORTH STAR
+  Steps completed per user     1.00
+    (1 steps across 1 sessions)
+  Steps per finished survey    1.00
+  Sessions with >= 1 step      1
+
+SURVEY COMPLETION
+  Started                      1
+  Completed                    1
+  Completion rate              100.0%
+
+SCORE CHANGE (first -> latest)
+  Sessions scored              1
+  Average first score          2.50
+  Average latest score         3.50
+  Average change               +1.00
+  Sessions that improved       1
+
+EVENTS
+  survey_started               1
+  survey_completed             1
+  score_shown                  1
+  step_completed               1
+
+MOST COMPLETED STEPS
+  meds-7day                    1
+
+TOKENS USED (all time)
+  Input                        239,313
+  Cached input                 148,890
+  Output                       3,621
+

@@ -20,6 +20,7 @@ from diagram import DIAGRAM  # noqa: E402
 from style import CSS        # noqa: E402
 
 T = D.tokenomics()
+TESTER = D.tester()
 SHIP = T[D.SHIPPED]
 PREV = T[D.BEFORE]
 su, pu = SHIP["usage"]["totals"], PREV["usage"]["totals"]
@@ -74,7 +75,9 @@ HTML = f"""<!doctype html>
 
 <div class="linkbar">
   <div><span class="k">GitHub repo</span> <a href="{D.REPO_URL}">{D.REPO_URL}</a> <span class="sub">(public)</span></div>
-  <div><span class="k">Live app</span> {fill("Render URL, or “run locally, see README”")}</div>
+  <div><span class="k">Live app</span> Not hosted — <strong>clone and run — see README (verified from a fresh clone in under a minute)</strong>.
+      The course allows either an online link or a fresh-clone run; this project uses the
+      second, rehearsed end to end.</div>
   <div><span class="k">Run locally</span> <span class="mono">see README.md</span> — one command, serves on
       <span class="mono">http://localhost:8000</span></div>
 </div>
@@ -415,17 +418,88 @@ completion rate and the first-to-latest score change.</p>
 </div>
 
 <h3>Real user session</h3>
-<p>{fill("tester quote")}</p>
+
+<p>I tested this with my fiancé. He was the person I most wanted in front of it, because he
+is the one who periodically says we should be better prepared for a natural disaster and
+never quite knows what to do about it — exactly the person this app is for. He also works
+in the field professionally, so he came in knowing what good guidance looks like.</p>
+
+<p>He ran the survey unaided on {TESTER["turns"]} questions and reached the results in
+<strong>{TESTER["minutes_to_results"]} minutes</strong>, including reading them.</p>
+
+<div class="kpis">
+  <div class="kpi"><span class="v">{TESTER["score_before"]} → {TESTER["score_after"]}</span>
+      <span class="l">score before and after one step</span></div>
+  <div class="kpi"><span class="v">{TESTER["minutes_to_results"]} min</span>
+      <span class="l">start to reading results</span></div>
+  <div class="kpi"><span class="v">{len(TESTER["steps_completed"])}</span>
+      <span class="l">step completed in the session</span></div>
+  <div class="kpi"><span class="v">{TESTER["turns"]}</span>
+      <span class="l">questions answered</span></div>
+</div>
+
+<p>His household is two adults and a pet in Connecticut, with daily medication in the
+house — so the medication and pet items applied, and the infant and power-equipment items
+correctly did not. He completed the 7-day medication check, which moved the score from
+{TESTER["score_before"]} to {TESTER["score_after"]}.</p>
+
+<h4>What he said</h4>
+<div class="callout">
+<p><strong>“Wow, I'm realising we have none of this stuff… we should get it together!”</strong></p>
+<p>That sentence is the whole product thesis landing on someone in real time. He is not
+unaware of disaster preparedness — he raises it unprompted — and he still had almost none
+of the items. The gap was never motivation. It was not knowing where to start.</p>
+</div>
+
+<p>When asked what he would actually do next, the answer was to go and assemble the
+things the app had just named. The session produced one completed step inside six
+minutes.</p>
+
+<h4>What he criticised, verbatim</h4>
+<p>Reporting only the warm quote would not be evidence. These are his words, unedited,
+and they are more useful than the praise:</p>
+
 <table>
-  <thead><tr><th>Measure</th><th>Result</th></tr></thead>
+  <thead><tr><th>What he said</th><th>What it means, and what I did</th></tr></thead>
   <tbody>
-    <tr><td>Score before</td><td>{fill("score before")}</td></tr>
-    <tr><td>Score after completing steps</td><td>{fill("score after")}</td></tr>
-    <tr><td>Minutes to finish the survey</td><td>{fill("minutes taken")}</td></tr>
-    <tr><td>Steps completed</td><td>{fill("steps completed")}</td></tr>
-    <tr><td>What they said they would do next</td><td>{fill("next action")}</td></tr>
+    <tr><td>“Name isn't anywhere on the page — from a branding perspective, not ideal.”</td>
+        <td><strong>Fixed during the session.</strong> “ReadyHome” appeared only in the
+            browser tab. There is now a wordmark on every screen.</td></tr>
+    <tr><td>“Chain of questions is redundant. I already said I don't have a plan, but it's
+            asking me about my plan.”</td>
+        <td><strong>A real design flaw.</strong> The written plan, the meeting place and
+            the out-of-area contact are three separate rubric items, so they are asked as
+            three separate questions. To him they were one. Grouping dependent questions
+            is the first change I would make.</td></tr>
+    <tr><td>“It is a little slow. Maybe I'm just impatient.”</td>
+        <td>Independently confirms the measured latency: one model call per question, about
+            five seconds each. He was not impatient; it is slow.</td></tr>
+    <tr><td>“Should the scores mean something? You should add some sort of indicator.”</td>
+        <td>A 2.5 means nothing without a reference point. There is no benchmark, no “most
+            households like yours score X”. A fair criticism with no quick fix — it needs
+            data from many households.</td></tr>
+    <tr><td>“For evacuation — out of your neighbourhood, but to where? If you wanted to ask
+            questions it's not clear that you can.”</td>
+        <td>Two problems. The guidance stops short of a destination, and the quick-reply
+            chips are so prominent that the free-text box reads as unavailable — the
+            “Something different…” affordance is not obvious enough.</td></tr>
+    <tr><td>“It says it's not medical advice, but is this financial advice?”</td>
+        <td>The disclaimer covers medicine because the medication step warranted it, but
+            the app also recommends spending money. The disclaimer is narrower than the
+            advice it gives.</td></tr>
+    <tr><td>“Curious if it works for the people who actually have equipment evac needs,
+            given that our household doesn't.”</td>
+        <td>The sharpest one. His household did not trigger the paths the app was built
+            for. Those paths are covered by unit tests and by my own runs, but
+            <strong>they have not been tested by a real household that has them</strong>,
+            and that is the test that matters most.</td></tr>
   </tbody>
 </table>
+
+<p>One session is one session. It is evidence that the product idea connects — an expert
+in the field finished it and immediately wanted to act — and it is evidence that the
+execution has specific, nameable problems. It is not evidence that the app works for the
+households it was designed for, which is a different claim and one I cannot make yet.</p>
 
 <h3>The case for the time saved</h3>
 <p>Today a caregiver in a mixed household would have to read Ready.gov's kit and plan
@@ -435,10 +509,12 @@ registry — six or more documents — and then work out for themselves which ap
 to do first. ReadyHome replaces the triage step: the survey measured above took
 {SHIP["survey_turns"]} turns, and produced a ranked, sourced, household-specific plan.</p>
 
-<p>My estimate, stated as an estimate rather than a measurement, is that
-<strong>one hour of guided thinking plus two to three hours of gathering supplies</strong>
-moves a household from unprepared to genuinely ready. The value of the app is not the
-hours; it is knowing which hour to spend first. {fill("replace with the tester's measured minutes once collected")}</p>
+<p>Against that, the measured session took <strong>{TESTER["minutes_to_results"]} minutes</strong>
+to produce a ranked, sourced, household-specific plan, and ended with one item already
+done. My estimate, stated as an estimate rather than a measurement, is that one hour of
+guided thinking plus two to three hours of gathering supplies moves a household from
+unprepared to genuinely ready. The value of the app is not those hours; it is knowing
+which hour to spend first.</p>
 
 <p>At scale, the cost side is unusually favourable: at {money(proj["per_session"])} per
 session, reaching 10,000 households costs roughly {money(proj["per_10000_users"])} per
@@ -461,6 +537,19 @@ mid-sized nonprofit.</p>
       no way to verify a family really packed the water.</li>
   <li><strong>English only</strong>, which is a real gap given that newly arrived families
       are among those least likely to have a neighbour to call.</li>
+  <li><strong>The score has no reference point.</strong> A 2.5 does not tell you whether
+      that is typical or alarming. The first tester asked for exactly this.</li>
+  <li><strong>Dependent questions are asked separately.</strong> Saying you have no written
+      plan still leads to questions about your meeting place and your out-of-area contact,
+      which reads as redundant even though they score separately.</li>
+  <li><strong>You cannot ask the bot a question.</strong> It only collects answers, so
+      “evacuate to where?” has nowhere to go. The free-text box also reads as unavailable
+      next to the quick-reply chips.</li>
+  <li><strong>The disclaimer is narrower than the advice.</strong> It covers medicine but
+      not the fact that the app recommends spending money.</li>
+  <li><strong>No household with power-dependent equipment has tested it.</strong> Those
+      paths are unit-tested and I have run them myself, but the people the app was built
+      for have not yet used it.</li>
   <li><strong>The survey is long.</strong> Questions that do not apply are never asked, so
       length varies: 21 questions for a single adult with no medical needs, 25 for the
       household measured above, and 33 for the largest case the engine allows (six people,
@@ -473,6 +562,12 @@ mid-sized nonprofit.</p>
 
 <h3>What I would build next</h3>
 <ol>
+  <li><strong>Test it with a household that has the needs it was built for</strong> — a
+      power-dependent household, or one with an infant. The first tester named this himself
+      and it outranks every feature below.</li>
+  <li><strong>Group the dependent questions</strong> so the plan section is one question
+      with three checkboxes, and shorten the survey from 26 questions.</li>
+  <li><strong>Give the score a reference point</strong>, even a rough one.</li>
   <li><strong>Full address → county, via the Census Geocoder</strong>, for county-level
       hazard history and county <span class="mono">.gov</span> links, without ever storing
       the street address.</li>

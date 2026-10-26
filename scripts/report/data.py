@@ -45,6 +45,28 @@ def pct_drop(before: float, after: float) -> float:
     return round((before - after) / before * 100, 1)
 
 
+# --- the real tester session -------------------------------------------------
+# Measured from docs/tester_session.json, which is frozen from the database
+# straight after the session so later test runs cannot dilute it.
+def tester() -> dict:
+    return json.loads((ROOT / "docs" / "tester_session.json").read_text())
+
+
+# Verbatim, in the order he said them. Kept whole, including the criticism:
+# a report that only quotes the praise is not evidence.
+TESTER_QUOTES = [
+    "I do this for a living and it's fun to see you do this.",
+    "Curious if it works for the people who actually have equipment evac needs, given that our household doesn't.",
+    "It says it's not medical advice, but is this financial advice?",
+    "Name isn't anywhere on the page \u2014 from a branding perspective, not ideal.",
+    "It is a little slow. Maybe I'm just impatient.",
+    "For evacuation \u2014 out of your neighbourhood, but to where? If you wanted to ask questions it's not clear that you can.",
+    "Chain of questions is redundant. I already said I don't have a plan, but it's asking me about my plan.",
+    "Wow, I'm realising we have none of this stuff\u2026 we should get it together!",
+    "Should the scores mean something? You should add some sort of indicator.",
+]
+
+
 # --- evidence ---------------------------------------------------------------
 def injection_evidence() -> str:
     return (ROOT / "docs" / "injection_evidence.txt").read_text().strip()

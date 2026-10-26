@@ -5,6 +5,7 @@ import { Breakdown } from './Breakdown'
 import { GoBag } from './GoBag'
 import { StepCard } from './StepCard'
 import { CostPanel } from './CostPanel'
+import { BrandBar } from './BrandBar'
 import { Sunny } from './Sunny'
 
 type Props = {
@@ -98,6 +99,7 @@ export function ScoreReveal({ sessionId, onRestart }: Props) {
 
   return (
     <main>
+      <BrandBar />
       <GoBag score={plan.score} label={plan.label} gain={gain} cheer={cheer} />
 
       <div className="reveal-sunny">

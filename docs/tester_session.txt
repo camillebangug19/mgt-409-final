@@ -1,0 +1,18 @@
+ReadyHome — real tester session
+Captured 2026-10-26 15:24 EDT
+========================================================
+
+Tester: Camille's fiance. He raises household emergency
+preparedness unprompted, which is why he was the person
+worth testing this on.
+
+Observed: 6 minutes from starting the survey to reading
+the results.
+
+  turns: 26
+  completed: True
+  score_before: 2.5
+  score_after: 3.5
+  steps_completed: ['meds-7day']
+  household: {'people': ['adult', 'adult'], 'pets': 1, 'state': 'CT', 'has_vehicle': True}
+  minutes_to_results: 6

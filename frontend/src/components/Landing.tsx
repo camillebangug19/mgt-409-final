@@ -42,6 +42,11 @@ export function Landing({ onStart, onResume, onFresh, starting, returning }: Pro
         </section>
       )}
 
+      <header className="brandbar">
+        <span className="brandname">ReadyHome</span>
+        <span className="brandtag">household readiness, one step at a time</span>
+      </header>
+
       <span className="eyebrow">{LANDING.eyebrow}</span>
 
       <div className="landing-hero">
