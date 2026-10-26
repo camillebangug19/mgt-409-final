@@ -17,3 +17,8 @@ dist/
 
 # captured from the running app, regenerate with scripts/screenshots.py
 docs/screenshots/*.png
+
+# demo video intermediates, regenerate with scripts/record_demo.py
+docs/demo/raw/
+docs/demo/raw.webm
+docs/demo/audio/

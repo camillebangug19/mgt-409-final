@@ -193,14 +193,24 @@ cd backend && ./.venv/bin/python ../scripts/screenshots.py
 Drives a real browser through the whole journey and writes `docs/screenshots/`. Needs the
 app running on port 8000 and `pip install playwright && playwright install chromium`.
 
-## Deploying to Render
+## The demo video
 
-One web service, using `render.yaml`:
+`docs/demo/readyhome-demo.mp4` (2m08s) is a real session, not a mock-up: a browser driven
+through the whole journey against the live app and `gpt-6-luna`, with a synthesised
+voice-over. Rebuild it with the app running on port 8010 against a throwaway database, so
+the recording cannot touch real sessions:
 
-1. Push this repo to GitHub.
-2. On Render: **New → Blueprint**, point it at the repo.
-3. Set **`PORTKEY_API_KEY`** in the dashboard (Environment). Do not commit it.
-4. Deploy, then check `/api/health` returns `{"status":"ok"}`.
+```bash
+READYHOME_DB=/tmp/demo.db ./backend/.venv/bin/python -m uvicorn app.main:app --port 8010 --app-dir backend
+./backend/.venv/bin/python scripts/narrate_demo.py   # text -> voice, and measure it
+./backend/.venv/bin/python scripts/record_demo.py    # drive the app, capture the screen
+./backend/.venv/bin/python scripts/assemble_demo.py  # cut to the narration, mux
+```
+
+The spoken lines live in `scripts/demo_narration.py`. Narration is the clock: each scene is
+sped up only as much as it takes to fit the sentence over it, which is what removes the dead
+air spent watching the model think. Reword a line and the picture re-times itself; the
+assembler warns if a line outgrows the footage it has to cover.
 
 ## What is deliberately not here
 
