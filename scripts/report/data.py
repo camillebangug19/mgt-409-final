@@ -15,7 +15,7 @@ ASSETS = ROOT / "docs" / "report_assets"
 FILL = "[FILL]"
 
 # --- links -----------------------------------------------------------------
-REPO_URL = FILL        # TODO(camille): GitHub URL, required in report AND slides
+REPO_URL = "https://github.com/camillebangug19/mgt-409-final"
 LIVE_URL = FILL        # TODO(camille): Render URL, or leave if running locally
 
 AUTHOR = "Camille Bangug"

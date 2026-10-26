@@ -1,7 +1,7 @@
 # ReadyHome
 
 **Live app:** `TODO(camille): paste the Render URL here on submission day.`
-**Repo:** `TODO(camille): paste the GitHub URL here — it must also appear in the report and the slides.`
+**Repo:** https://github.com/camillebangug19/mgt-409-final
 
 > The free Render tier sleeps when idle, so **the first load can take about 30 seconds**. Give it a moment before deciding it is broken.
 

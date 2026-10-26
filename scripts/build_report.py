@@ -73,7 +73,7 @@ HTML = f"""<!doctype html>
 <p class="byline">{D.AUTHOR} · {D.COURSE} · Final project</p>
 
 <div class="linkbar">
-  <div><span class="k">GitHub repo</span> {fill("GitHub URL — required here and on the slides")}</div>
+  <div><span class="k">GitHub repo</span> <a href="{D.REPO_URL}">{D.REPO_URL}</a> <span class="sub">(public)</span></div>
   <div><span class="k">Live app</span> {fill("Render URL, or “run locally, see README”")}</div>
   <div><span class="k">Run locally</span> <span class="mono">see README.md</span> — one command, serves on
       <span class="mono">http://localhost:8000</span></div>

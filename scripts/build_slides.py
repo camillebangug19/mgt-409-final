@@ -108,8 +108,8 @@ SLIDES = f"""
     </div>
   </div>
   <p class="sub">{D.AUTHOR} · {D.COURSE}</p>
-  <p class="links"><strong>Repo:</strong> {fill("GitHub URL")} &nbsp;·&nbsp;
-     <strong>App:</strong> {fill("live URL or “run locally”")}</p>
+  <p class="links"><strong>Repo:</strong> <a href="{D.REPO_URL}">{D.REPO_URL}</a> &nbsp;·&nbsp;
+     <strong>App:</strong> {fill("live URL, or “clone and run — see README”")}</p>
 </section>
 
 <section>
