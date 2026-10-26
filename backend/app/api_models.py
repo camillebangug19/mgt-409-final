@@ -23,6 +23,8 @@ class ChatResponse(BaseModel):
     message: str
     quick_replies: list[str] = []
     done: bool = False
+    # Lets the UI show the right control, e.g. the state picker.
+    next_slot: str | None = None
     section: str | None = None
     sections: list[str] = []
     section_index: int = 0

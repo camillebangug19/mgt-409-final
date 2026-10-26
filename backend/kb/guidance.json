@@ -1,55 +1,184 @@
 {
   "sources": {
-    "ready_kit":      {"publisher": "Ready.gov (FEMA)",        "title": "Build A Kit",                                  "source_url": "https://www.ready.gov/kit"},
-    "ready_lowcost":  {"publisher": "Ready.gov (FEMA)",        "title": "Low and No Cost Preparedness",                 "source_url": "https://www.ready.gov/collection/low-and-no-cost-preparedness"},
-    "ready_alerts":   {"publisher": "Ready.gov (FEMA)",        "title": "Emergency Alerts",                             "source_url": "https://ready.gov/alerts"},
-    "cdc_infant":     {"publisher": "CDC",                     "title": "Infant Feeding in Emergencies: Checklist",     "source_url": "https://www.cdc.gov/nutrition/emergencies-infant-feeding/checklist.html"},
-    "aap_kids":       {"publisher": "American Academy of Pediatrics", "title": "Disasters and Children: Resources for Families", "source_url": "https://www.aap.org/en/patient-care/disasters-and-children/resources-for-families/"},
-    "acl_older":      {"publisher": "Administration for Community Living", "title": "Emergency Preparedness",          "source_url": "https://www.acl.gov/programs/emergency-preparedness"},
-    "hhs_empower":    {"publisher": "HHS emPOWER Program",     "title": "About emPOWER",                                "source_url": "https://empowerprogram.hhs.gov/about.html"},
-    "redcross_pets":  {"publisher": "American Red Cross",      "title": "Make Pets Part of Your Emergency Plans",       "source_url": "https://www.redcross.org/about-us/news-and-events/news/2025/make-pets-part-of-your-emergency-plans.html"},
-    "tx_stear":       {"publisher": "Texas Division of Emergency Management", "title": "State of Texas Emergency Assistance Registry (STEAR)", "source_url": "https://tdem.texas.gov/response/state-of-texas-emergency-assistance-registry"}
+    "ready_kit": {
+      "publisher": "Ready.gov (FEMA)",
+      "title": "Build A Kit",
+      "source_url": "https://www.ready.gov/kit"
+    },
+    "ready_lowcost": {
+      "publisher": "Ready.gov (FEMA)",
+      "title": "Low and No Cost Preparedness",
+      "source_url": "https://www.ready.gov/collection/low-and-no-cost-preparedness"
+    },
+    "ready_alerts": {
+      "publisher": "Ready.gov (FEMA)",
+      "title": "Emergency Alerts",
+      "source_url": "https://ready.gov/alerts"
+    },
+    "cdc_infant": {
+      "publisher": "CDC",
+      "title": "Infant Feeding in Emergencies: Checklist",
+      "source_url": "https://www.cdc.gov/nutrition/emergencies-infant-feeding/checklist.html"
+    },
+    "aap_kids": {
+      "publisher": "American Academy of Pediatrics",
+      "title": "Disasters and Children: Resources for Families",
+      "source_url": "https://www.aap.org/en/patient-care/disasters-and-children/resources-for-families/"
+    },
+    "acl_older": {
+      "publisher": "Administration for Community Living",
+      "title": "Emergency Preparedness",
+      "source_url": "https://www.acl.gov/programs/emergency-preparedness"
+    },
+    "hhs_empower": {
+      "publisher": "HHS emPOWER Program",
+      "title": "About emPOWER",
+      "source_url": "https://empowerprogram.hhs.gov/about.html"
+    },
+    "redcross_pets": {
+      "publisher": "American Red Cross",
+      "title": "Make Pets Part of Your Emergency Plans",
+      "source_url": "https://www.redcross.org/about-us/news-and-events/news/2025/make-pets-part-of-your-emergency-plans.html"
+    },
+    "tx_stear": {
+      "publisher": "Texas Division of Emergency Management",
+      "title": "State of Texas Emergency Assistance Registry (STEAR)",
+      "source_url": "https://tdem.texas.gov/response/state-of-texas-emergency-assistance-registry"
+    },
+    "ready_plan": {
+      "publisher": "Ready.gov (FEMA)",
+      "title": "Make A Plan",
+      "source_url": "https://www.ready.gov/plan"
+    },
+    "ready_evacuation": {
+      "publisher": "Ready.gov (FEMA)",
+      "title": "Evacuation",
+      "source_url": "https://www.ready.gov/evacuation"
+    },
+    "ready_power": {
+      "publisher": "Ready.gov (FEMA)",
+      "title": "Power Outages",
+      "source_url": "https://www.ready.gov/power-outages"
+    },
+    "ready_pets": {
+      "publisher": "Ready.gov (FEMA)",
+      "title": "Prepare Your Pets for Disasters",
+      "source_url": "https://www.ready.gov/pets"
+    },
+    "ready_disability": {
+      "publisher": "Ready.gov (FEMA)",
+      "title": "People with Disabilities",
+      "source_url": "https://www.ready.gov/disability"
+    },
+    "ready_water": {
+      "publisher": "Ready.gov (FEMA)",
+      "title": "Water",
+      "source_url": "https://www.ready.gov/water"
+    },
+    "ready_food": {
+      "publisher": "Ready.gov (FEMA)",
+      "title": "Food",
+      "source_url": "https://www.ready.gov/food"
+    },
+    "ready_car": {
+      "publisher": "Ready.gov (FEMA)",
+      "title": "Car Safety",
+      "source_url": "https://www.ready.gov/car"
+    },
+    "redcross_kit": {
+      "publisher": "American Red Cross",
+      "title": "What Do You Need In a Survival Kit",
+      "source_url": "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/survival-kit-supplies.html"
+    },
+    "redcross_plan": {
+      "publisher": "American Red Cross",
+      "title": "Disaster Preparedness Plan",
+      "source_url": "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/make-a-plan.html"
+    },
+    "redcross_pets_prep": {
+      "publisher": "American Red Cross",
+      "title": "Pet Disaster Preparedness & Recovery",
+      "source_url": "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/pet-disaster-preparedness.html"
+    }
   },
   "modules": {
     "kit-phases": {
       "summary": "Ready.gov recommends a basic kit with several days of water and food, a flashlight, a battery or hand-crank radio, extra batteries and a first-aid kit. Building it in phases spreads the cost.",
-      "source_ids": ["ready_kit", "ready_lowcost"]
+      "source_ids": [
+        "ready_kit",
+        "ready_lowcost",
+        "redcross_kit",
+        "ready_water",
+        "ready_food"
+      ]
     },
     "family-plan": {
       "summary": "A family emergency plan writes down where you will meet, how you will reach each other, and who your out-of-area contact is. It costs nothing to make.",
-      "source_ids": ["ready_lowcost"]
+      "source_ids": [
+        "ready_lowcost",
+        "ready_plan",
+        "redcross_plan"
+      ]
     },
     "evacuation-routes": {
       "summary": "Know more than one way out of your neighbourhood and practise it, so you are not deciding under pressure.",
-      "source_ids": ["ready_lowcost"]
+      "source_ids": [
+        "ready_lowcost",
+        "ready_evacuation"
+      ]
     },
     "transportation-plan": {
       "summary": "If you do not drive or may not have a vehicle available, arrange in advance who will drive you or which transit or paratransit service you would use.",
-      "source_ids": ["ready_lowcost", "acl_older"]
+      "source_ids": [
+        "ready_lowcost",
+        "acl_older",
+        "ready_car",
+        "ready_evacuation"
+      ]
     },
     "alerts-on": {
       "summary": "Wireless Emergency Alerts and NOAA Weather Radio warn you about hazards in your area. Turning alerts on is free and takes a minute.",
-      "source_ids": ["ready_alerts"]
+      "source_ids": [
+        "ready_alerts"
+      ]
     },
     "meds-7day": {
       "summary": "Keep at least a 7-day supply of daily medications, with a written list of what each person takes. Talk to your doctor or pharmacist about building and rotating that supply.",
-      "source_ids": ["acl_older"]
+      "source_ids": [
+        "acl_older",
+        "ready_disability"
+      ]
     },
     "backup-power": {
       "summary": "Equipment such as oxygen concentrators, CPAP machines, dialysis equipment and powered wheelchairs stops working in an outage. Plan a backup power source and know where you would go if the power stays off.",
-      "source_ids": ["hhs_empower", "acl_older"]
+      "source_ids": [
+        "hhs_empower",
+        "acl_older",
+        "ready_power"
+      ]
     },
     "infant-feeding-kit": {
       "summary": "CDC's emergency infant-feeding checklist covers what to store for breastfed and formula-fed infants, including clean water, feeding supplies and a way to clean them.",
-      "source_ids": ["cdc_infant", "aap_kids"]
+      "source_ids": [
+        "cdc_infant",
+        "aap_kids"
+      ]
     },
     "evacuation-helper": {
       "summary": "If you would need help to leave, agree in advance with a specific person who will come for you, and have a backup person.",
-      "source_ids": ["acl_older"]
+      "source_ids": [
+        "acl_older",
+        "ready_disability"
+      ]
     },
     "pet-kit-lodging": {
       "summary": "The Red Cross recommends a go-kit for each pet and identifying pet-friendly lodging ahead of time, because many emergency shelters cannot take pets.",
-      "source_ids": ["redcross_pets"]
+      "source_ids": [
+        "redcross_pets",
+        "ready_pets",
+        "redcross_pets_prep"
+      ]
     }
-  }
+  },
+  "verified_note": "Every source_url was fetched and returned 200 on 2026-10-25."
 }

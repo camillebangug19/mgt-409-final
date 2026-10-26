@@ -4,10 +4,11 @@ import type { Step } from '../types'
 type Props = {
   step: Step
   busy: boolean
+  justDone: boolean
   onComplete: (stepId: string, checked: string[]) => void
 }
 
-export function StepCard({ step, busy, onComplete }: Props) {
+export function StepCard({ step, busy, justDone, onComplete }: Props) {
   const [open, setOpen] = useState(false)
   const [ticked, setTicked] = useState<string[]>([])
 
@@ -24,7 +25,7 @@ export function StepCard({ step, busy, onComplete }: Props) {
   }
 
   return (
-    <article className="step-card">
+    <article className={`step-card${justDone ? ' just-done' : ''}`}>
       <div className="step-top">
         <h3>{step.title}</h3>
         <span className="gain">+{step.points_gain} points</span>
@@ -34,7 +35,9 @@ export function StepCard({ step, busy, onComplete }: Props) {
 
       <div className="tags">
         <span className="tag">About {step.est_minutes} min</span>
-        <span className="tag">{step.est_cost_band === 'free' ? 'Free' : step.est_cost_band}</span>
+        <span className={`tag${step.est_cost_band === 'free' ? ' free' : ''}`}>
+          {step.est_cost_band === 'free' ? 'Free to do' : step.est_cost_band}
+        </span>
       </div>
 
       <ol className="how-to">
@@ -56,29 +59,33 @@ export function StepCard({ step, busy, onComplete }: Props) {
 
       {step.medical_note && <p className="medical">{step.medical_note}</p>}
 
-      <div className="sources">
-        {step.sources.map((source) => (
-          <a
-            key={source.id}
-            className="source-chip"
-            href={source.source_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={`${source.title} — ${source.publisher}`}
-          >
-            {source.title} ↗
-          </a>
-        ))}
+      <div className="read-more">
+        <span className="label">Read more</span>
+        <div className="sources">
+          {step.sources.map((source) => (
+            <a
+              key={source.id}
+              className="source-chip"
+              href={source.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`${source.title} — ${source.publisher}`}
+            >
+              {source.title} ↗
+            </a>
+          ))}
+        </div>
       </div>
 
       {!open ? (
-        <button onClick={() => setOpen(true)} disabled={busy}>
-          I did this
+        <button className="primary" onClick={() => setOpen(true)} disabled={busy}>
+          I did this → earn +{step.points_gain}
         </button>
       ) : (
         <div className="self-check">
           <p className="muted" style={{ marginBottom: '0.5rem' }}>
-            Tick what is actually done. You can come back for the rest.
+            Tick whatever is genuinely done — part of it still counts, and you can come back
+            for the rest.
           </p>
           {step.self_check.map((item) => (
             <label key={item.item_id}>
@@ -92,7 +99,7 @@ export function StepCard({ step, busy, onComplete }: Props) {
           ))}
           <div className="self-check-actions">
             <button className="primary" onClick={confirm} disabled={busy || ticked.length === 0}>
-              {busy ? 'Saving…' : 'Confirm'}
+              {busy ? 'Saving…' : 'Claim my points'}
             </button>
             <button onClick={() => setOpen(false)} disabled={busy}>
               Cancel

@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { sendMessage } from '../api'
 import type { ChatTurn, Message } from '../types'
 import { ProgressStrip } from './ProgressStrip'
+import { StatePicker } from './StatePicker'
 
 const MAX_CHARS = 500
+const OTHER = 'Something different'
 
 type Props = {
   sessionId: string
@@ -14,14 +16,17 @@ export function Chat({ sessionId, onDone }: Props) {
   const [messages, setMessages] = useState<Message[]>([])
   const [turn, setTurn] = useState<ChatTurn | null>(null)
   const [draft, setDraft] = useState('')
+  const [freeText, setFreeText] = useState(false)
   const [thinking, setThinking] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const started = useRef(false)
   const logEnd = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   async function send(text: string) {
     setError(null)
     setThinking(true)
+    setFreeText(false)
     if (text) setMessages((previous) => [...previous, { role: 'user', text }])
     try {
       const next = await sendMessage(sessionId, text)
@@ -29,13 +34,12 @@ export function Chat({ sessionId, onDone }: Props) {
       setTurn(next)
       if (next.done) onDone(next)
     } catch {
-      setError('Something went wrong reaching the server. Try again.')
+      setError('Something went wrong reaching the server. Try that again.')
     } finally {
       setThinking(false)
     }
   }
 
-  // Kick off the conversation once.
   useEffect(() => {
     if (started.current) return
     started.current = true
@@ -55,7 +59,14 @@ export function Chat({ sessionId, onDone }: Props) {
     void send(text)
   }
 
-  const answered = turn ? `${turn.filled} of ${turn.total} answered` : ''
+  function openFreeText() {
+    setFreeText(true)
+    window.setTimeout(() => inputRef.current?.focus(), 0)
+  }
+
+  const askingState = turn?.next_slot === 'state'
+  const showChips = !!turn && turn.quick_replies.length > 0 && !thinking && !freeText && !askingState
+  const pct = turn ? Math.round(turn.progress * 100) : 0
 
   return (
     <main>
@@ -80,38 +91,62 @@ export function Chat({ sessionId, onDone }: Props) {
           <div ref={logEnd} />
         </div>
 
-        {turn && turn.quick_replies.length > 0 && !thinking && (
+        {askingState && !thinking && (
+          <StatePicker disabled={thinking} onPick={(abbr, name) => void send(`${name} (${abbr})`)} />
+        )}
+
+        {showChips && (
           <div className="chips">
-            {turn.quick_replies.map((reply) => (
+            {turn!.quick_replies.map((reply) => (
               <button key={reply} onClick={() => void send(reply)}>
                 {reply}
               </button>
             ))}
+            <button className="other" onClick={openFreeText}>
+              {OTHER}…
+            </button>
           </div>
         )}
 
-        <form className="composer" onSubmit={submit}>
-          <label htmlFor="answer" className="sr-only" style={{ position: 'absolute', left: '-9999px' }}>
-            Your answer
-          </label>
-          <input
-            id="answer"
-            value={draft}
-            maxLength={MAX_CHARS}
-            placeholder="Type your answer…"
-            onChange={(event) => setDraft(event.target.value)}
-            disabled={thinking}
-            autoComplete="off"
-          />
-          <button type="submit" className="primary" disabled={thinking || !draft.trim()}>
-            Send
+        {(freeText || !showChips) && !askingState && (
+          <form className="composer" onSubmit={submit}>
+            <label htmlFor="answer" style={{ position: 'absolute', left: '-9999px' }}>
+              Your answer
+            </label>
+            <input
+              id="answer"
+              ref={inputRef}
+              value={draft}
+              maxLength={MAX_CHARS}
+              placeholder={freeText ? 'Describe your situation in your own words…' : 'Type your answer…'}
+              onChange={(event) => setDraft(event.target.value)}
+              disabled={thinking}
+              autoComplete="off"
+            />
+            <button type="submit" className="primary" disabled={thinking || !draft.trim()}>
+              Send
+            </button>
+          </form>
+        )}
+
+        {freeText && (
+          <button className="muted" style={{ marginTop: '0.5rem' }} onClick={() => setFreeText(false)}>
+            ← Back to the quick answers
           </button>
-        </form>
+        )}
 
         {error && <p className="error">{error}</p>}
-        <p className="muted" style={{ marginTop: '0.7rem', marginBottom: 0 }}>
-          {answered}
-        </p>
+
+        {turn && (
+          <div className="answered-count">
+            <div className="answered-bar">
+              <div style={{ width: `${pct}%` }} />
+            </div>
+            <span className="muted">
+              {turn.filled} of {turn.total}
+            </span>
+          </div>
+        )}
       </section>
 
       <p className="disclaimer">

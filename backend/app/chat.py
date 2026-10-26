@@ -44,6 +44,7 @@ def to_response(message: str, quick_replies: list[str], state: dict, done: bool)
         message=message,
         quick_replies=quick_replies or state["quick_replies"],
         done=done,
+        next_slot=state["next_slot"],
         section=state["next_section"] or survey.SECTIONS[-1],
         sections=state["sections"],
         section_index=state["section_index"],

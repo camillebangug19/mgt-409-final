@@ -15,12 +15,15 @@ export function Breakdown({ breakdown }: { breakdown: Category[] }) {
   return (
     <section className="breakdown">
       <h3>Where your points come from</h3>
+      <p className="muted" style={{ marginBottom: '0.8rem' }}>
+        Only the categories that apply to your household are counted.
+      </p>
       {breakdown.map((row) => {
         const pct = row.max_points > 0 ? (row.earned / row.max_points) * 100 : 0
         return (
           <div
             key={row.category}
-            className="meter-row"
+            className={`meter-row${row.earned >= row.max_points ? ' full' : ''}`}
             title={`${row.category}: ${row.earned} of ${row.max_points} points`}
           >
             <div className="meter-head">

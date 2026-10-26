@@ -4,7 +4,10 @@ type Props = {
   score: number
   label: string
   gain: number | null
+  cheer?: string | null
 }
+
+const SPARKS = 10
 
 const MIN = 1
 const MAX = 10
@@ -45,7 +48,7 @@ function useCountUp(target: number) {
  * A backpack that fills as the score rises. Ten levels, CSS transitions only.
  * The number beside it is the real value; the drawing is the encouragement.
  */
-export function GoBag({ score, label, gain }: Props) {
+export function GoBag({ score, label, gain, cheer }: Props) {
   const shown = useCountUp(score)
 
   // Fill level 0-10 mapped onto the inner cavity of the bag.
@@ -59,7 +62,24 @@ export function GoBag({ score, label, gain }: Props) {
 
   return (
     <div className="reveal">
-      <div className="bag-wrap">
+      <div className={`bag-wrap${gain ? ' celebrating' : ''}`}>
+        {gain !== null && gain > 0 && (
+          <span className="sparks" aria-hidden="true">
+            {Array.from({ length: SPARKS }, (_, i) => {
+              const angle = (i / SPARKS) * Math.PI * 2
+              return (
+                <i
+                  key={i}
+                  style={{
+                    ['--dx' as string]: `${Math.cos(angle) * 72}px`,
+                    ['--dy' as string]: `${Math.sin(angle) * 72}px`,
+                    animationDelay: `${i * 22}ms`,
+                  }}
+                />
+              )
+            })}
+          </span>
+        )}
         <svg
           width="150"
           height="160"
@@ -77,12 +97,12 @@ export function GoBag({ score, label, gain }: Props) {
           <path
             d="M58 40 C58 20, 92 20, 92 40"
             fill="none"
-            stroke="var(--accent-ink)"
+            stroke="var(--blue-ink)"
             strokeWidth="5"
             strokeLinecap="round"
           />
           {/* body */}
-          <rect x="26" y="38" width="98" height="94" rx="18" fill="#fff" stroke="var(--accent-ink)" strokeWidth="3" />
+          <rect x="26" y="38" width="98" height="94" rx="18" fill="#fff" stroke="var(--blue-ink)" strokeWidth="3" />
           {/* contents rising like water */}
           <g clipPath="url(#bag-cavity)">
             <rect
@@ -91,15 +111,15 @@ export function GoBag({ score, label, gain }: Props) {
               y={fillY}
               width="90"
               height={fillHeight}
-              fill="var(--accent)"
+              fill="var(--blue)"
               opacity="0.9"
             />
           </g>
           {/* front pocket, drawn over the fill */}
-          <rect x="46" y="96" width="58" height="30" rx="8" fill="none" stroke="var(--accent-ink)" strokeWidth="3" />
+          <rect x="46" y="96" width="58" height="30" rx="8" fill="none" stroke="var(--blue-ink)" strokeWidth="3" />
           {/* straps */}
-          <path d="M40 132 L40 142" stroke="var(--accent-ink)" strokeWidth="5" strokeLinecap="round" />
-          <path d="M110 132 L110 142" stroke="var(--accent-ink)" strokeWidth="5" strokeLinecap="round" />
+          <path d="M40 132 L40 142" stroke="var(--blue-ink)" strokeWidth="5" strokeLinecap="round" />
+          <path d="M110 132 L110 142" stroke="var(--blue-ink)" strokeWidth="5" strokeLinecap="round" />
         </svg>
 
         {gain !== null && gain > 0 && (
@@ -114,6 +134,11 @@ export function GoBag({ score, label, gain }: Props) {
         <span className="outof"> / 10</span>
       </div>
       <p className="bag-label">{full ? 'Ready to go!' : label}</p>
+      {cheer && (
+        <p className="cheer" role="status">
+          {cheer}
+        </p>
+      )}
     </div>
   )
 }

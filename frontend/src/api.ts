@@ -1,4 +1,4 @@
-import type { ChatTurn, Plan } from './types'
+import type { ChatTurn, Plan, SessionStatus } from './types'
 
 // In production FastAPI serves this bundle, so the API is same-origin.
 const BASE = import.meta.env.DEV ? 'http://localhost:8000' : ''
@@ -14,6 +14,28 @@ async function post<T>(path: string, body?: unknown): Promise<T> {
     throw new Error(`${path} failed (${response.status})`)
   }
   return response.json() as Promise<T>
+}
+
+/** What we remember about this browser, if anything. */
+export async function getSessionStatus(): Promise<SessionStatus | null> {
+  const saved = localStorage.getItem(SESSION_KEY)
+  if (!saved) return null
+  try {
+    const response = await fetch(`${BASE}/api/session/${encodeURIComponent(saved)}`)
+    if (!response.ok) return null
+    const status = (await response.json()) as SessionStatus
+    if (!status.found) {
+      localStorage.removeItem(SESSION_KEY)
+      return null
+    }
+    return status
+  } catch {
+    return null
+  }
+}
+
+export function savedSessionId(): string | null {
+  return localStorage.getItem(SESSION_KEY)
 }
 
 /** An anonymous session id, reused across reloads (REQUIREMENTS.md 6.4). */

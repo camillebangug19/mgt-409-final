@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import chat, db, plan
+from . import chat, db, plan, survey
 from .api_models import ChatRequest, ChatResponse, CompleteStepRequest, SessionResponse
 from .config import FRONTEND_DIST, MODEL_NAME
 
@@ -44,6 +44,37 @@ def start_session() -> SessionResponse:
         db.create_session(conn, session_id)
         db.log_event(conn, session_id, "survey_started")
     return SessionResponse(session_id=session_id)
+
+
+@app.get("/api/session/{session_id}")
+def session_status(session_id: str) -> dict:
+    """What we remember about a returning visitor.
+
+    There are no accounts: the browser keeps an anonymous id in localStorage
+    and this reports how far that id got, so someone can pick up where they
+    left off (REQUIREMENTS.md 6.4).
+    """
+    with db.session_db() as conn:
+        row = db.get_session(conn, session_id)
+        if not row:
+            return {"found": False}
+        answers = chat.load_answers(conn, session_id)
+        state = survey.survey_state(answers)
+        profile = survey.build_profile(answers)
+        return {
+            "found": True,
+            "survey_done": bool(row["survey_done"]),
+            "progress": state["progress"],
+            "answered": len(state["filled"]),
+            "remaining": len(state["missing"]),
+            "first_score": row["first_score"],
+            "latest_score": row["latest_score"],
+            "completed_steps": len(db.completed_steps(conn, session_id)),
+            "people": len(profile.people),
+            "pets": sum(p.count for p in profile.pets),
+            "state": profile.state,
+            "started_at": row["created_at"],
+        }
 
 
 @app.post("/api/chat", response_model=ChatResponse)

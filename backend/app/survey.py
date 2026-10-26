@@ -43,6 +43,28 @@ BASELINE_PROMPTS = {
     "pet_lodging": "pet-friendly lodging identified",
 }
 
+# Concrete examples, so "do you have three days of food" is answerable.
+# These are what the question means, not extra advice.
+BASELINE_EXAMPLES = {
+    "water": "a gallon per person per day, so a four-person household needs 12 gallons for three days. Stored bottles or refilled clean bottles both count",
+    "food": "food that needs no cooking, like tinned beans, tuna, peanut butter, crackers, dried fruit or tinned soup",
+    "light_radio": "a torch or flashlight, a battery or hand-crank radio, and spare batteries that fit them",
+    "first_aid": "plasters, gauze, tape, antiseptic, gloves and any personal items your household uses",
+    "phone_power": "a power bank, a car charger, or a hand-crank charger",
+    "written_plan": "one page everyone can find, saying where to meet, who to call, and who does what",
+    "meeting_place": "somewhere specific, like the big tree in the park or the library car park",
+    "out_of_area_contact": "someone far enough away that they would not be in the same emergency, who everyone knows to ring",
+    "knows_routes": "two different ways out of your neighbourhood that you have actually driven or walked",
+    "transportation_plan": "who drives, or which bus, train or paratransit service you would use if you had to leave",
+    "alerts_on": "Wireless Emergency Alerts on your phone, a county or city alert signup, or a NOAA weather radio",
+    "meds_7day": "about a week of each daily medication, plus a written list of what everyone takes",
+    "backup_power": "a charged battery, a generator, or a plan for where to go if the power stays off",
+    "infant_feeding": "several days of formula or feeding supplies, clean water to prepare it, and a way to clean bottles",
+    "evacuation_helper": "a specific person who has agreed to come and help, plus a backup person",
+    "pet_go_kit": "pet food and water, a spare leash or carrier, vaccination records and any pet medication",
+    "pet_lodging": "somewhere specific outside your area that you have checked takes pets",
+}
+
 MAX_PEOPLE = 12
 
 # Which person has a need is a nice-to-have: scoring only asks whether anyone
@@ -402,8 +424,14 @@ def question_hint(slot: str, answers: dict[str, Any]) -> str:
     if slot == "has_vehicle":
         return "whether they have a working vehicle available"
     if slot in BASELINE_PROMPTS:
-        return (f"whether they already have {BASELINE_PROMPTS[slot]}. "
-                "Answer yes, partly, no or not sure")
+        example = BASELINE_EXAMPLES.get(slot)
+        hint = f"whether they already have {BASELINE_PROMPTS[slot]}"
+        if example:
+            hint += (
+                f". Say briefly what that means in practice: {example}. "
+                "Keep the whole question under about 35 words"
+            )
+        return hint + ". Answer yes, partly, no or not sure"
     return f"the value for {slot}"
 
 

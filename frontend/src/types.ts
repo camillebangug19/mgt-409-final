@@ -2,6 +2,7 @@ export type ChatTurn = {
   message: string
   quick_replies: string[]
   done: boolean
+  next_slot: string | null
   section: string | null
   sections: string[]
   section_index: number
@@ -84,4 +85,19 @@ export type Plan = {
   disclaimer: string
   flagged: string[]
   completion?: { step_id: string; score_before: number; score_after: number; delta: number; credited: string[] }
+}
+
+export type SessionStatus = {
+  found: boolean
+  survey_done?: boolean
+  progress?: number
+  answered?: number
+  remaining?: number
+  first_score?: number | null
+  latest_score?: number | null
+  completed_steps?: number
+  people?: number
+  pets?: number
+  state?: string | null
+  started_at?: string
 }

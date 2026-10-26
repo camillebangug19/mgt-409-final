@@ -10,9 +10,35 @@ type Props = {
   onRestart: () => void
 }
 
+/** Short names for the trophy chips, so they stay on one line. */
+const STEP_NAMES: Record<string, string> = {
+  'kit-phases': 'Kit started',
+  'family-plan': 'Family plan',
+  'evacuation-routes': 'Evacuation routes',
+  'transportation-plan': 'Transport plan',
+  'alerts-on': 'Alerts on',
+  'meds-7day': '7-day meds',
+  'backup-power': 'Backup power',
+  'infant-feeding-kit': 'Infant feeding kit',
+  'evacuation-helper': 'Evacuation helper',
+  'pet-kit-lodging': 'Pet go-kit',
+}
+
+function cheerFor(plan: Plan, earned: number): string {
+  if (plan.score >= 10) return "That is 10 out of 10. Your household is ready to go!"
+  if (plan.steps.length === 0) return 'Every step that applies to you is done. Brilliant.'
+  const done = plan.completed_step_ids.length
+  if (earned <= 0) return 'Logged. Finish the rest of that step and the score ticks up.'
+  if (done === 1) return `Nice one — first step done, +${earned} points.`
+  if (plan.score >= 8) return `+${earned}. You are nearly there.`
+  return `+${earned} points. ${done} steps done — keep going.`
+}
+
 export function ScoreReveal({ sessionId, onRestart }: Props) {
   const [plan, setPlan] = useState<Plan | null>(null)
   const [gain, setGain] = useState<number | null>(null)
+  const [cheer, setCheer] = useState<string | null>(null)
+  const [justDone, setJustDone] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -27,9 +53,14 @@ export function ScoreReveal({ sessionId, onRestart }: Props) {
     setError(null)
     try {
       const next = await completeStep(sessionId, stepId, checked)
+      const earned = next.completion?.delta ?? 0
       setPlan(next)
-      setGain(next.completion?.delta ?? null)
-      window.setTimeout(() => setGain(null), 1800)
+      setGain(earned > 0 ? earned : null)
+      setCheer(cheerFor(next, earned))
+      setJustDone(stepId)
+      window.setTimeout(() => setGain(null), 2000)
+      window.setTimeout(() => setCheer(null), 5000)
+      window.setTimeout(() => setJustDone(null), 2500)
     } catch {
       setError('Could not save that. Try again.')
     } finally {
@@ -44,7 +75,7 @@ export function ScoreReveal({ sessionId, onRestart }: Props) {
 
   return (
     <main>
-      <GoBag score={plan.score} label={plan.label} gain={gain} />
+      <GoBag score={plan.score} label={plan.label} gain={gain} cheer={cheer} />
 
       <Breakdown breakdown={plan.breakdown} />
       <p className="muted">{plan.rubric_note}</p>
@@ -62,13 +93,25 @@ export function ScoreReveal({ sessionId, onRestart }: Props) {
               Three at a time, biggest win first. Each one raises your score.
             </p>
             {plan.steps.map((step) => (
-              <StepCard key={step.id} step={step} busy={busy} onComplete={onComplete} />
+              <StepCard
+                key={step.id}
+                step={step}
+                busy={busy}
+                justDone={justDone === step.id}
+                onComplete={onComplete}
+              />
             ))}
           </>
         )}
 
         {plan.completed_step_ids.length > 0 && (
-          <p className="muted">{plan.completed_step_ids.length} step(s) completed so far.</p>
+          <div className="trophy-row" aria-label="Steps you have completed">
+            {plan.completed_step_ids.map((id) => (
+              <span className="trophy" key={id}>
+                ✓ {STEP_NAMES[id] ?? id}
+              </span>
+            ))}
+          </div>
         )}
       </section>
 
