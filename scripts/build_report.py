@@ -228,6 +228,13 @@ apartment in Florida, and no car.</p>
 
 {D.img("fig-celebrate.jpg", "Score increasing after completing a step", "<strong>7.</strong> The score rises, the bag fills, and the completed step is replaced by the next best one.")}
 
+<p>The same run is captured stage by stage in
+<span class="mono">docs/traced_run.txt</span>, produced by
+<span class="mono">scripts/trace_run.py</span>: every survey turn with the slot it filled,
+the score arithmetic, the ranked candidates, the exact prompt sent to the Coach, the
+Coach's raw reply, what the verifier kept, and the token cost. It also runs the verifier
+against a deliberately bad Coach reply so the rejection path is visible in the same file.</p>
+
 <p>What the run produced, measured rather than described: the survey finished in
 <strong>{SHIP["survey_turns"]} turns</strong> and scored <strong>{SHIP["score"]}/10</strong>,
 offering <span class="mono">{", ".join(SHIP["steps_offered"])}</span> as the top three.
@@ -384,7 +391,18 @@ further test confirms that even a real, correct Ready.gov URL is stripped if it 
 the knowledge base — being on an allowed domain is not enough.</p>
 
 <p>The suite is <strong>{D.TEST_COUNT} tests across {D.TEST_FILES} files</strong>, none of
-which makes a real API call; the agents run against scripted stand-in models.</p>
+which makes a real API call; the agents run against scripted stand-in models. The captured
+output is in <span class="mono">docs/test_output.txt</span>, including every individual
+safety assertion.</p>
+
+<p>Separately, <span class="mono">tests/test_live.py</span> holds five smoke tests that
+<em>do</em> call the real model. They are skipped unless <span class="mono">RUN_LIVE=1</span>
+is set, so the default suite stays offline, and they exist to confirm on a fresh machine
+that the key loads, the model answers, the Coach's output survives the verifier, and an
+injection is still refused without spending a token. Writing them immediately earned its
+keep: they exposed that the cached HTTP client binds its connection pool to one event
+loop, which is correct for the server but breaks a test runner that gives each test a
+fresh loop.</p>
 
 <!-- ===================== 7. IMPACT ===================== -->
 <h2>7. Impact</h2>

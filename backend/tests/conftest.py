@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -27,3 +28,17 @@ def persona(request):
     key = request.param
     profile, answers = build_persona(key)
     return key, profile, answers
+
+
+def pytest_collection_modifyitems(config, items):
+    """Skip live tests unless RUN_LIVE=1 (REQUIREMENTS.md 13).
+
+    The default suite must never touch the network, so anything marked
+    `live` is skipped unless it is asked for explicitly.
+    """
+    if os.environ.get("RUN_LIVE") == "1":
+        return
+    skip = pytest.mark.skip(reason="live test: set RUN_LIVE=1 to run against the real model")
+    for item in items:
+        if "live" in item.keywords:
+            item.add_marker(skip)

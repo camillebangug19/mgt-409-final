@@ -147,6 +147,12 @@ cd backend
 
 No test makes a real API call — the agents run against PydanticAI `FunctionModel` stubs.
 
+To check the real model wiring on a fresh machine (five API calls):
+
+```bash
+RUN_LIVE=1 ./.venv/bin/python -m pytest tests/test_live.py -v
+```
+
 | File | Covers |
 |---|---|
 | `test_env_loading.py` | `.env` found in both locations, clear error when missing |
@@ -159,6 +165,17 @@ No test makes a real API call — the agents run against PydanticAI `FunctionMod
 | `test_api.py` | start → answer → score → complete → score up → events |
 | `test_sunny.py` | sensitive questions always use the calm face |
 | `test_landing_copy.py` | landing text matches REQUIREMENTS.md §18.2 exactly |
+| `test_live.py` | real-model smoke tests, skipped unless `RUN_LIVE=1` |
+
+## Evidence captured for the report
+
+| File | What it is | Regenerate with |
+|---|---|---|
+| `docs/traced_run.txt` | one full run, stage by stage: survey turns → score → Coach → verifier → cost | `scripts/trace_run.py` |
+| `docs/tokenomics.json` | measured tokens, with and without history trimming | `scripts/measure_cost.py` |
+| `docs/injection_evidence.txt` | the canonical prompt-injection attempt and its result | written by `pytest` |
+| `docs/test_output.txt` | the suite passing, including every safety assertion | `pytest` |
+| `docs/screenshots/` | the whole user journey | `scripts/screenshots.py` |
 
 ## Metrics
 

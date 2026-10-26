@@ -277,13 +277,13 @@ AI Foundations for Managers/      ← class folder; .env with PORTKEY_API_KEY li
 
 ## 15. Evidence to capture for the report
 
-- [ ] Screenshots: landing, mid-survey chat, score reveal, 3 steps, a completed step with the score going up
-- [ ] One full run traced (survey turns → score → Coach → verifier)
-- [ ] Run-cost panel screenshot (tokens + $ per session → per user/month, 100 and 10,000 users)
-- [ ] `pytest` output showing the safety tests passing
-- [ ] `scripts/metrics.py` output from real testers
-- [ ] One real parent/caregiver: a quote, their score before and after, and minutes taken
-- [ ] Architecture diagram (§5)
+- [x] Screenshots: landing, mid-survey chat, score reveal, 3 steps, a completed step with the score going up — `docs/screenshots/`, regenerate with `scripts/screenshots.py`
+- [x] One full run traced (survey turns → score → Coach → verifier) — `docs/traced_run.txt`, regenerate with `scripts/trace_run.py`
+- [x] Run-cost panel screenshot (tokens + $ per session → per user/month, 100 and 10,000 users) — `docs/screenshots/7-cost-panel.png`; numbers in `docs/tokenomics.json`
+- [x] `pytest` output showing the safety tests passing — `docs/test_output.txt`
+- [ ] `scripts/metrics.py` output from real testers — **BLOCKED: needs a real tester session**
+- [ ] One real parent/caregiver: a quote, their score before and after, and minutes taken — **BLOCKED: Camille to collect**
+- [x] Architecture diagram (§5) — inline SVG in `scripts/report/diagram.py`, appears in report and slides
 
 ## 16. Out of scope (do not build now)
 

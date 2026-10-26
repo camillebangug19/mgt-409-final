@@ -1,0 +1,189 @@
+
+==============================================================================
+STAGE 1 — SURVEY TURNS  (Survey Bot agent, gpt-6-luna)
+==============================================================================
+Household: 2 people, one an older adult using a walker and home oxygen who
+takes daily medication. No pets. Apartment in Florida. No car.
+
+[turn  1] user: (opens the chat)
+           bot (hi): Hi there! 👋 I'm Sunny, and I'm so glad you're here. I'll ask a few quick questions to see where your family stands. There are no wrong answers! To start, how many people live in your home, including you?
+
+[turn  2] user: 2
+           bot (cheer): Nice, two people—great start! What age group are you?
+           recorded: num_people=2
+
+[turn  3] user: Adult
+           bot (hi): Thanks! What age group is the second person in your home?
+           recorded: person_1={'age_group': 'adult'}
+
+[turn  4] user: Older adult (65+)
+           bot (calm): You're doing great. Does anyone in your home use a cane, walker, or wheelchair, spend most of their time in bed, or need help evacuating?
+           recorded: person_2={'age_group': 'older_adult'}
+
+[turn  5] user: Cane or walker
+           bot (calm): Thanks for letting me know. Does anyone use equipment that needs electricity, like oxygen, a CPAP, dialysis equipment, or a powered wheelchair?
+           recorded: mobility_needs={'people': [{'person': None, 'mobility': 'cane_or_walker', 'needs_evac_help': False}]}
+
+[turn  6] user: Oxygen
+           bot (calm): Does anyone in your household take medication every day?
+           recorded: power_equipment={'people': [{'person': None, 'equipment': ['oxygen']}]}
+
+[turn  7] user: Yes, one person
+           bot (hi): Do you have any pets? If so, what kind and how many?
+           recorded: daily_meds={'people': [None]}
+
+[turn  8] user: No pets
+           bot (hi): What is your 5-digit ZIP code? No street address needed.
+           recorded: pets={'none': True}
+
+[turn  9] user: 32399
+           bot (hi): What state are you in? Please use the 2-letter abbreviation.
+           recorded: zip_code='32399'
+
+[turn 10] user: FL
+           bot (hi): Do you live in a house, apartment, mobile home, or somewhere else?
+           recorded: state='FL'
+
+[turn 11] user: Apartment
+           bot (hi): Do you have a working vehicle available?
+           recorded: housing_type='apartment'
+
+[turn 12] user: No
+           bot (hi): Do you have at least three days of water stored? Plan on 1 gallon per person per day (12 gallons for four people); clean refilled bottles count too.
+           recorded: has_vehicle=False
+
+[turn 13] user: Yes
+           bot (hi): Do you have three or more days of food that needs no cooking, such as tinned beans, tuna, peanut butter, crackers, dried fruit, or tinned soup?
+           recorded: water='yes'
+
+[turn 14] user: Partly
+           bot (hi): Do you have a flashlight or torch, a battery or hand-crank radio, and spare batteries that fit them?
+           recorded: food='partly'
+
+[turn 15] user: Partly
+           bot (hi): Do you have a first-aid kit with plasters, gauze, tape, antiseptic, gloves, and any personal items your household uses?
+           recorded: light_radio='partly'
+
+[turn 16] user: Partly
+           bot (hi): Do you have a way to charge your phone during a power outage, such as a power bank, car charger, or hand-crank charger?
+           recorded: first_aid='partly'
+
+[turn 17] user: Partly
+           bot (hi): Do you have a written family emergency plan—one page everyone can find that says where to meet, who to call, and who does what?
+           recorded: phone_power='partly'
+
+[turn 18] user: Partly
+           bot (hi): Have you agreed on a specific place to meet, such as a park tree or library car park?
+           recorded: written_plan='partly'
+
+[turn 19] user: Partly
+           bot (hi): Does everyone know an out-of-area contact to call—someone far enough away to likely be unaffected by the same emergency?
+           recorded: meeting_place='partly'
+
+[turn 20] user: Partly
+           bot (hi): Do you know two different ways out of your neighbourhood that you’ve actually driven or walked?
+           recorded: out_of_area_contact='partly'
+
+[turn 21] user: No
+           bot (hi): Do you have a plan for how you’d leave—for example, who would drive or which bus, train, or paratransit service you’d use?
+           recorded: knows_routes='no'
+
+[turn 22] user: No
+           bot (hi): Do you have emergency alerts turned on, such as phone alerts, local signup alerts, or a NOAA weather radio?
+           recorded: transportation_plan='no'
+
+[turn 23] user: Partly
+           bot (calm): Do you have about a week of each daily medication, plus a written list of what everyone takes?
+           recorded: alerts_on='partly'
+
+[turn 24] user: Partly
+           bot (calm): Do you have backup power for medical equipment, such as a charged battery or generator, or a plan for where to go if power stays off?
+           recorded: meds_7day='partly'
+
+[turn 25] user: No
+           bot (cheer): Thanks—that completes the survey. You’ve identified a few areas to strengthen, including evacuation routes and transportation, alerts, medication supply, and backup power. You can work on these one step at a time.
+           recorded: backup_power='no'
+
+Survey finished in 25 turns.
+
+==============================================================================
+STAGE 2 — SCORING  (plain Python, no model call)
+==============================================================================
+Applicable rubric items : 13 of 17
+  excluded as not applicable: ['evacuation_helper', 'infant_feeding', 'pet_go_kit', 'pet_lodging']
+Earned / max            : 3.625 / 8.5
+Score                   : 1 + 9 x (3.625/8.5) = 5.0  (Getting there)
+    Supplies           2.0 / 3.0
+    Plan               1.0 / 2.0
+    Evacuation         0.0 / 1.5
+    Alerts            0.25 / 0.5
+    Special needs    0.375 / 1.5
+
+==============================================================================
+STAGE 3 — RANKING  (plain Python, no model call)
+==============================================================================
+  transportation-plan    +0.8    20 min  free  <= shown
+  backup-power           +0.8    30 min  free  <= shown
+  meds-7day              +0.4    20 min  free  <= shown
+  family-plan            +1.1    30 min  free
+  kit-phases             +1.1    45 min  $25–75
+  evacuation-routes      +0.8    20 min  free
+  alerts-on              +0.3     5 min  free
+
+==============================================================================
+STAGE 4 — COACH  (second agent, writes the wording only)
+==============================================================================
+Prompt sent to the Coach:
+  | Household: 1 adult, 1 older adult. Needs: person 2 uses a cane or walker, uses oxygen (needs electricity), takes daily medication. Location: state FL, apartment, no working vehicle.
+  | 
+  | Candidate steps, already chosen for them:
+  | - transportation-plan: Make a transportation plan (worth +0.8 points to them)
+  | - backup-power: Make a backup power plan for medical equipment (worth +0.8 points to them)
+  | - meds-7day: Do a 7-day medication check (worth +0.4 points to them)
+  | 
+  | Write one note for each candidate step id above.
+
+Raw Coach output:
+  - transportation-plan: Since you live in an apartment without a working vehicle, planning ahead for who could drive you or which transit or paratransit service you could use can make it easier to get where you need to go.
+  - backup-power: Because the older adult uses oxygen that needs electricity, plan a backup power source and where you could go if an outage lasts.
+  - meds-7day: Keeping a 7-day supply of daily medication and a written list can help you stay organized if usual routines are disrupted; ask the doctor or pharmacist about building and rotating the supply.
+Coach tokens: in=1533 out=284
+
+==============================================================================
+STAGE 5 — VERIFIER  (plain Python, runs before anything is shown)
+==============================================================================
+Steps the ranker allows : ['backup-power', 'meds-7day', 'transportation-plan']
+Steps the Coach returned: ['transportation-plan', 'backup-power', 'meds-7day']
+Kept after verification : ['transportation-plan', 'backup-power', 'meds-7day']
+Flagged and removed     : nothing — the Coach stayed inside the rules
+
+Same check against a deliberately bad Coach reply:
+  REMOVED: invented or unranked step removed: buy-a-bunker
+  REMOVED: why for meds-7day: dosing language blocked
+  survived: ['meds-7day -> Not medical advice. Ask your doctor or pharmacist about medications and medical devices.']
+
+==============================================================================
+STAGE 6 — WHAT THE USER SEES, AND COMPLETING A STEP
+==============================================================================
+Score 5.0/10 (Getting there)
+  +0.8  Make a transportation plan
+        why: Since you live in an apartment without a working vehicle, planning ahead for who could drive you or which transit or paratransit service you could use can make it easier to get where you need to go.
+        sources: ['Low and No Cost Preparedness', 'Emergency Preparedness', 'Car Safety', 'Evacuation']
+  +0.8  Make a backup power plan for medical equipment
+        why: Because the older adult uses oxygen that needs electricity, plan a backup power source and where you could go if an outage lasts.
+        sources: ['About emPOWER', 'Emergency Preparedness', 'Power Outages']
+  +0.4  Do a 7-day medication check
+        why: Keeping a 7-day supply of daily medication and a written list can help you stay organized if usual routines are disrupted; ask the doctor or pharmacist about building and rotating the supply.
+        sources: ['Emergency Preparedness', 'People with Disabilities']
+
+Completing 'transportation-plan': score 5.0 -> 5.5 (advertised +0.8)
+Next three now: ['backup-power', 'meds-7day', 'family-plan']
+
+==============================================================================
+TOTAL MEASURED COST FOR THIS RUN
+==============================================================================
+  coach        input    2,601  cached        0  output    431
+  survey_bot   input  220,681  cached  140,196  output  3,050
+  TOTAL        input  223,282  cached  140,196  output  3,481   est $0.1562
+
+Token counts are measured. Dollar rates are an assumption; see pricing.py.

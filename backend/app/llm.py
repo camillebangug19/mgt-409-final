@@ -20,7 +20,13 @@ from .config import MODEL_NAME, PORTKEY_BASE_URL, get_portkey_api_key
 
 @lru_cache(maxsize=1)
 def get_model() -> OpenAIResponsesModel:
-    """The one model every agent uses. Cached so the client is reused."""
+    """The one model every agent uses. Cached so the client is reused.
+
+    The cached client owns an HTTP connection pool bound to the event loop that
+    created it. That is right for the server, which runs one loop for its
+    lifetime, but tests that each get a fresh loop must call
+    `get_model.cache_clear()` first.
+    """
     portkey_api_key = get_portkey_api_key()
 
     client = AsyncOpenAI(
