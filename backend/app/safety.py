@@ -9,7 +9,16 @@ a length cap, a prompt-injection pre-filter, and an off-topic counter.
 import re
 
 MAX_MESSAGE_CHARS = 500
+
+# MAX_TURNS counts turns that actually reached the model. A large household
+# needs 33 questions, so counting redirects against this budget could cut a
+# real survey off before it finished.
 MAX_TURNS = 40
+
+# Redirects get their own ceiling so someone cannot sit here forever.
+MAX_OFFTOPIC = 12
+
+# After this many nudges the UI stops offering a free-text box.
 OFFTOPIC_LIMIT = 3
 
 # Phrases that try to talk to the model rather than answer the question.

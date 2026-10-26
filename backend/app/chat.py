@@ -118,16 +118,17 @@ async def run_turn(conn, session_id: str, message: str, model=None) -> ChatRespo
     # Cheap checks before we pay for a model call.
     screening = safety.screen(message)
     if screening.flagged:
+        # Deliberately does NOT touch turn_count: a redirect is not survey
+        # progress, and a 33-question household only has 7 turns of slack
+        # against MAX_TURNS. Redirects are bounded by MAX_OFFTOPIC instead.
         conn.execute(
             "UPDATE sessions SET offtopic_count = offtopic_count + 1 WHERE session_id = ?",
             (session_id,),
         )
-        conn.execute(
-            "UPDATE sessions SET turn_count = turn_count + 1 WHERE session_id = ?",
-            (session_id,),
-        )
         row = db.get_session(conn, session_id)
         nudges = int(row["offtopic_count"]) if row else 1
+        if nudges > safety.MAX_OFFTOPIC:
+            return to_response(limits.TURN_LIMIT_MESSAGE, [], state, False, "calm")
         reply = screening.note + f"So, {survey.short_question(state['next_slot'])}"
         # After three nudges stop offering a free-text box (REQUIREMENTS.md 10).
         quick = state["quick_replies"] if nudges >= safety.OFFTOPIC_LIMIT else []
