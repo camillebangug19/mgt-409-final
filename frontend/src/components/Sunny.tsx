@@ -111,15 +111,12 @@ function Pose({ mood }: { mood: SunnyMood }) {
     )
   }
 
-  // hi, the default: waving.
+  // hi, the default. The original art had a waving arm here; Camille asked
+  // for it to go, which leaves the eight-ray ring unbroken.
   return (
     <>
       <Shades />
       <Stroke d="M-20 26 Q0 42 20 26" />
-      <g className="sunny-wave" transform="translate(60,20) rotate(40)">
-        <rect x="-8" y="-38" width="16" height="40" rx="8" fill={BODY} stroke={EDGE} strokeWidth="3" />
-        <circle cx="0" cy="-42" r="11" fill={BODY} stroke={EDGE} strokeWidth="3" />
-      </g>
     </>
   )
 }
