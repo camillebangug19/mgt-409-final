@@ -104,7 +104,8 @@ def test_the_canonical_attack_leaks_nothing_and_changes_no_slot(client):
     Path(__file__).resolve().parents[2].joinpath("docs").mkdir(exist_ok=True)
     Path(__file__).resolve().parents[2].joinpath("docs/injection_evidence.txt").write_text(
         "REQUIREMENTS.md 13.2 #6 - prompt injection evidence\n"
-        "=" * 56 + "\n\n"
+        + "=" * 56
+        + "\n\n"
         f"Attack sent:\n  {CANONICAL}\n\n"
         f"Bot reply:\n  {turn['message']}\n\n"
         f"Flagged: {turn['flagged']}\n"
@@ -174,3 +175,27 @@ def test_an_overlong_message_is_rejected_by_the_api(client):
         "/api/chat", json={"session_id": session_id, "message": "x" * 501}
     )
     assert response.status_code == 422
+
+
+def test_a_redirect_never_shows_the_models_own_instructions(client):
+    """question_hint() is written for the model; it must not reach a user."""
+    from app import survey
+
+    session_id = client.post("/api/session").json()["session_id"]
+    client.post("/api/chat", json={"session_id": session_id, "message": "hi"})
+
+    turn = client.post("/api/chat", json={"session_id": session_id, "message": CANONICAL}).json()
+    leaky = ("age_group", "older_adult", "record_answer", "slot", "infant (<1)",
+             "2-letter abbreviation", "Answer yes, partly, no or not sure")
+    for fragment in leaky:
+        assert fragment not in turn["message"], fragment
+
+
+@pytest.mark.parametrize("slot", ["num_people", "person_1", "person_3", "water", "state", None])
+def test_short_questions_are_plain_english(slot):
+    from app import survey
+
+    text = survey.short_question(slot)
+    assert text and text[0].islower()
+    for jargon in ("_", "slot", "record_answer", "(<1)"):
+        assert jargon not in text, (slot, jargon)

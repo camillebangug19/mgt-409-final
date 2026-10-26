@@ -345,3 +345,75 @@ You are Sunny, a warm, encouraging sun-with-sunglasses helping a family see how 
 Opening: "Hi there! 👋 I'm Sunny, and I'm so glad you're here. I'll ask a few quick questions to see where your family stands. There are no wrong answers! To start, how many people live in your home, including you?"
 Closing: "All done, and nice work! 🎉 Let's take a look at your score and a few easy next steps."
 ```
+
+## 19. Submission rules from the official course page
+
+Source: https://zlisto.github.io/mgt_409_fa26/project_requirements.html
+These are course rules that were not in earlier versions of this file. Where
+they conflict with anything above, these win.
+
+### 19.1 The repo
+- **Public, or private with the GitHub user `zlisto` added as a collaborator.**
+  Adding the collaborator is the requirement; saying "it's private" is not
+  enough on its own.
+- Must contain all code, a `README.md` with run instructions, and a
+  `.env.example` with no real values. No committed secrets, ever.
+
+### 19.2 The two HTML deliverables
+- `report.html` — a **single self-contained file**, 10-15 printed pages.
+- `slides.html` — a **single self-contained file**, **10 slides maximum**,
+  built with **reveal.js loaded from a CDN**. Arrow keys move between slides,
+  `F` is full screen.
+- Both must **open by double-clicking on any computer with every image
+  visible**, so screenshots and diagrams are **embedded as base64 data URIs**
+  (or inline SVG). A relative `<img src="docs/...">` renders broken for a
+  grader and loses the evidence points it was there to earn.
+- Per Camille's professor (email, Oct 2026): Canvas takes files or a URL but
+  not both, so the **GitHub repo URL must appear inside the report and the
+  slides**. Submit nothing else.
+
+### 19.3 The 10-minute rule and the dry run
+- If the app is not running within **10 minutes** of a grader following the
+  README, the "teaching staff can run it" points are **0**.
+- Required rehearsal before submitting: **clone the repo into a brand-new
+  folder, put `.env` one level above it, follow the README exactly, and use
+  the app.**
+- Key names may only be `PORTKEY_API_KEY` or `OPENAI_API_KEY`, spelled
+  exactly. `.env` is checked in the repo folder first, then one level above.
+
+### 19.4 The evidence rule
+Every report section has required evidence. **A section missing its evidence
+scores at most half** of that row's points.
+
+| Section | Evidence that must be visible |
+|---|---|
+| Motivation + what is new | Named existing products, with sources |
+| Agent design | A diagram, plus one real run traced with screenshots |
+| Tokenomics | **Measured** token counts (estimates alone score half) |
+| Safety | A screenshot or test output of a defence working |
+| Impact + metrics | Sourced numbers and **real user** evidence |
+
+So: no claim in the report without a measured number, a screenshot, or a link.
+
+### 19.5 The demo video
+Optional, 2-3 minutes. It is a **safety net**: it can earn the "It works" and
+"Look + feel" points if the app will not run for staff, but it can never earn
+the "teaching staff can run it" points. Without a video, those 25 points
+depend entirely on the app running.
+
+### 19.6 Grading, for reference (100 points)
+
+| Category | Component | Points |
+|---|---|---|
+| The idea | Novelty + real-world value | 21 |
+| The app | It works | 15 |
+| | Teaching staff can run it | 5 |
+| | Look + feel | 10 |
+| The report | Motivation + what is new | 8 |
+| | Agent design | 10 |
+| | Tokenomics | 8 |
+| | Safety | 8 |
+| | Impact + metrics | 5 |
+| | Design | 2 |
+| The slides | Content | 6 |
+| | Design | 2 |

@@ -1,0 +1,116 @@
+[
+  {
+    "label": "trimmed history (shipped)",
+    "history_turns": 4,
+    "survey_turns": 25,
+    "survey_seconds": 130.1,
+    "score": 5.0,
+    "steps_offered": [
+      "transportation-plan",
+      "backup-power",
+      "meds-7day"
+    ],
+    "usage": {
+      "agents": [
+        {
+          "agent": "coach",
+          "input_tokens": 1533,
+          "cached_tokens": 0,
+          "output_tokens": 284,
+          "runs": 1,
+          "cost_usd": 0.004756
+        },
+        {
+          "agent": "survey_bot",
+          "input_tokens": 220681,
+          "cached_tokens": 140196,
+          "output_tokens": 3050,
+          "runs": 25,
+          "cost_usd": 0.148631
+        }
+      ],
+      "totals": {
+        "input_tokens": 222214,
+        "cached_tokens": 140196,
+        "output_tokens": 3334,
+        "runs": 26,
+        "cost_usd": 0.153387
+      },
+      "model": "gpt-6-luna",
+      "rates": {
+        "input_per_token": 1.25e-06,
+        "cached_per_token": 1.25e-07,
+        "output_per_token": 1e-05,
+        "are_estimates": true,
+        "note": "Token counts are measured. Dollar rates are an assumption for gpt-6-luna; see backend/app/pricing.py."
+      },
+      "projections": {
+        "per_session": 0.153387,
+        "per_100_users": 15.34,
+        "per_10000_users": 1533.87,
+        "assumption": "One completed survey per user per month."
+      },
+      "budget": {
+        "used_today": 225548,
+        "daily_limit": 2000000
+      }
+    }
+  },
+  {
+    "label": "full history (before optimisation)",
+    "history_turns": 999,
+    "survey_turns": 25,
+    "survey_seconds": 174.7,
+    "score": 5.0,
+    "steps_offered": [
+      "transportation-plan",
+      "backup-power",
+      "meds-7day"
+    ],
+    "usage": {
+      "agents": [
+        {
+          "agent": "coach",
+          "input_tokens": 1533,
+          "cached_tokens": 0,
+          "output_tokens": 284,
+          "runs": 1,
+          "cost_usd": 0.004756
+        },
+        {
+          "agent": "survey_bot",
+          "input_tokens": 657158,
+          "cached_tokens": 622133,
+          "output_tokens": 4897,
+          "runs": 25,
+          "cost_usd": 0.170518
+        }
+      ],
+      "totals": {
+        "input_tokens": 658691,
+        "cached_tokens": 622133,
+        "output_tokens": 5181,
+        "runs": 26,
+        "cost_usd": 0.175274
+      },
+      "model": "gpt-6-luna",
+      "rates": {
+        "input_per_token": 1.25e-06,
+        "cached_per_token": 1.25e-07,
+        "output_per_token": 1e-05,
+        "are_estimates": true,
+        "note": "Token counts are measured. Dollar rates are an assumption for gpt-6-luna; see backend/app/pricing.py."
+      },
+      "projections": {
+        "per_session": 0.175274,
+        "per_100_users": 17.53,
+        "per_10000_users": 1752.74,
+        "assumption": "One completed survey per user per month."
+      },
+      "budget": {
+        "used_today": 663872,
+        "daily_limit": 2000000
+      }
+    }
+  }
+]

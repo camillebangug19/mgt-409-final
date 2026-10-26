@@ -454,6 +454,41 @@ def question_hint(slot: str, answers: dict[str, Any]) -> str:
     return f"the value for {slot}"
 
 
+# Short, friendly versions of each question, for when the bot has to redirect
+# someone. question_hint() is written for the model and must never be shown to
+# a user: it contains the internal slot vocabulary.
+SHORT_QUESTIONS = {
+    "num_people": "how many people live in your home, including you?",
+    "mobility_needs": "does anyone use a cane, walker or wheelchair, or need a hand getting out?",
+    "power_equipment": "does anyone use equipment that needs electricity?",
+    "daily_meds": "does anyone take medication every day?",
+    "infant_feeding_method": "how is the baby fed?",
+    "pets": "do you have any pets?",
+    "zip_code": "what is your ZIP code?",
+    "state": "which state are you in?",
+    "housing_type": "do you live in a house, apartment or mobile home?",
+    "has_vehicle": "do you have a working vehicle?",
+}
+
+
+def short_question(slot: str | None) -> str:
+    """A friendly one-line version of the current question."""
+    if not slot:
+        return "how ready your household is"
+    if slot in SHORT_QUESTIONS:
+        return SHORT_QUESTIONS[slot]
+    if re.fullmatch(r"person_\d+", slot):
+        number = slot.split("_")[1]
+        return (
+            "what age group are you in?"
+            if number == "1"
+            else f"what age group is person {number}?"
+        )
+    if slot in BASELINE_PROMPTS:
+        return f"do you already have {BASELINE_PROMPTS[slot]}?"
+    return "how ready your household is"
+
+
 def quick_replies_for(slot: str) -> list[str]:
     if slot == "num_people":
         return ["1", "2", "3", "4", "5+"]

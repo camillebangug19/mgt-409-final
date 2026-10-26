@@ -1,6 +1,7 @@
 """Runs one survey turn: load state, call the agent, persist what it recorded."""
 
 import json
+import os
 from typing import Any
 
 from pydantic_ai.messages import ModelMessage, ModelRequest, UserPromptPart
@@ -18,7 +19,7 @@ _HISTORY: dict[str, list[ModelMessage]] = {}
 # survey state is reloaded from SQLite each turn anyway, so history is only
 # needed so Sunny can refer back to what was just said. Keeping the last few
 # exchanges is enough for that.
-HISTORY_TURNS = 4
+HISTORY_TURNS = int(os.environ.get("READYHOME_HISTORY_TURNS", "4"))
 
 
 def trim_history(messages: list[ModelMessage] | None, turns: int = HISTORY_TURNS):
@@ -127,8 +128,7 @@ async def run_turn(conn, session_id: str, message: str, model=None) -> ChatRespo
         )
         row = db.get_session(conn, session_id)
         nudges = int(row["offtopic_count"]) if row else 1
-        question = state["next_question_about"] or "how ready your household is"
-        reply = screening.note + f"Back to it: {question.split('.')[0]}."
+        reply = screening.note + f"So, {survey.short_question(state['next_slot'])}"
         # After three nudges stop offering a free-text box (REQUIREMENTS.md 10).
         quick = state["quick_replies"] if nudges >= safety.OFFTOPIC_LIMIT else []
         response = to_response(reply, quick, state, False, "calm")
