@@ -3,6 +3,7 @@ export type ChatTurn = {
   quick_replies: string[]
   done: boolean
   next_slot: string | null
+  mood: SunnyMood
   section: string | null
   sections: string[]
   section_index: number
@@ -11,9 +12,12 @@ export type ChatTurn = {
   total: number
 }
 
+export type SunnyMood = 'hi' | 'thinking' | 'cheer' | 'calm'
+
 export type Message = {
   role: 'bot' | 'user'
   text: string
+  mood?: SunnyMood
 }
 
 export type Source = {

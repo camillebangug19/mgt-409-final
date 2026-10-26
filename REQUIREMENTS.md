@@ -62,6 +62,8 @@ Look for `.env` in **two places, in order**:
 1. The repo root
 2. The folder **one level above** the repo root
 
+> **Camille's setup:** her real `PORTKEY_API_KEY` is in a `.env` file at the root of her **`AI Foundations for Managers`** class folder, and this repo sits inside that folder. That means location #2 (one level up) finds it. Do **not** copy the key into this repo. If the repo ends up nested deeper than one level, tell Camille instead of searching more folders up. (Note: `.venv/` is the Python virtual environment folder. The key belongs in `.env`, not `.venv`.)
+
 Resolve both paths from `__file__`. Fail with a clear message if `PORTKEY_API_KEY` is missing. Commit `.env.example` containing only `PORTKEY_API_KEY=`. Add `.env` to `.gitignore`.
 
 ## 5. Agents and tools
@@ -190,6 +192,7 @@ Files: `backend/kb/guidance.json`, `rubric.json`, `steps.json`, `local_resources
 
 ## 8. Frontend
 
+- **Use the copy, tone and Sunny mascot spec in §18.** Sunny is the Survey Bot's face and the app's helper on every screen.
 - Screens: **Landing**, **Survey chat**, **Score + Next Steps**
 - Chat: bot and user bubbles, a typing indicator, quick-reply chips, a section progress strip, and Skip on optional questions
 - Step cards: "+X points" badge, time/cost tags, source chips, and an "I did this" button that opens the self-check
@@ -257,18 +260,19 @@ Tests make **no real API calls**. Use PydanticAI `TestModel` / `FunctionModel`. 
 ## 14. Repo structure
 
 ```
-readyhome/
-├── README.md            # live link at top, what it is, local steps
-├── .env.example         # PORTKEY_API_KEY=
-├── .gitignore           # .env, .venv, node_modules, dist, *.db
-├── backend/
-│   ├── requirements.txt
-│   ├── app/  main.py, llm.py, config.py, db.py, models.py, scoring.py,
-│   │         verifier.py, limits.py, events.py, agents/, tools/
-│   ├── kb/   guidance.json, rubric.json, steps.json, local_resources.json, cheap_options.json
-│   └── tests/ (+ fixtures/personas.json)
-├── frontend/            # Vite React TS
-└── scripts/metrics.py
+AI Foundations for Managers/      ← class folder; .env with PORTKEY_API_KEY lives here
+└── readyhome/                    ← this repo
+    ├── README.md                 # live link at top, what it is, local steps
+    ├── .env.example              # PORTKEY_API_KEY=
+    ├── .gitignore                # .env, .venv, node_modules, dist, *.db
+    ├── backend/
+    │   ├── requirements.txt
+    │   ├── app/  main.py, llm.py, config.py, db.py, models.py, scoring.py,
+    │   │         verifier.py, limits.py, events.py, agents/, tools/
+    │   ├── kb/   guidance.json, rubric.json, steps.json, local_resources.json, cheap_options.json
+    │   └── tests/ (+ fixtures/personas.json)
+    ├── frontend/                 # Vite React TS
+    └── scripts/metrics.py
 ```
 
 ## 15. Evidence to capture for the report
@@ -293,3 +297,51 @@ Accounts, a street address or geocoding, live weather alerts, an admin dashboard
 - Reminders (formula expiry monthly, registry re-enrollment yearly)
 - A shareable plan for caregivers and family
 - A My Plan print view and an admin metrics dashboard
+
+## 18. Copy, tone and the Sunny mascot
+
+### 18.1 Sunny (mascot + helper)
+- **Who:** Sunny is a friendly sun wearing sunglasses. Sunny is the Survey Bot's avatar and a small on-screen helper throughout the app, a bit like an old-school desktop assistant but never pushy.
+- **Art:** Use `sunny_mascot.svg` (provided by Camille, in the repo root or `frontend/src/assets/`). It has 4 poses. Split them into a `<Sunny mood="hi|thinking|cheer|calm" size={...} />` React component (inline SVG, no external images).
+  - `hi`: default, waving. Use on landing and in the first chat message.
+  - `thinking`: while the bot is "typing" and while the score is computing.
+  - `cheer`: on "yes" answers, the score reveal, completing a step, and reaching 10/10.
+  - `calm`: sunglasses pushed up, kind eyes. Use for sensitive questions (mobility, medical equipment, needing help evacuating) and for any error message.
+- **Animation:** gentle idle bob (CSS, 3s loop) and slowly rotating rays. A small bounce on `cheer`. Everything stops when `prefers-reduced-motion` is set.
+- **Where Sunny appears:**
+  - Landing: large Sunny (`hi`) next to the headline.
+  - Chat: a small Sunny avatar beside every bot bubble. The mood is set per message (the Survey Bot output includes `mood`).
+  - Score + Steps: Sunny sits beside the Go-Bag and says one short line in a speech bubble (e.g., "Look how far you've come!").
+  - **Floating helper (bottom-right, all screens after landing):** a small Sunny button. Tapping it opens a speech bubble with one context tip for the current screen, from a fixed list in `frontend/src/copy/sunnyTips.ts` (no LLM call). Example: "Tip: tap 'I did this' when you finish a step, and I'll update your score!"
+- **Don't be annoying:** Sunny never pops up uninvited more than once per screen. It has a "Hide Sunny" option (remembered in localStorage). It never covers buttons or text, and it's keyboard accessible with `aria-label="Sunny, your helper"`.
+- Add `mood: Literal["hi","thinking","cheer","calm"]` to `SurveyTurn`. Test: sensitive slots always return `calm`.
+
+### 18.2 Landing page copy (use as written)
+- **Eyebrow:** Free · No sign-up · About 3 minutes
+- **Headline:** You've got this. Let's get your family ready together.
+- **Subhead:** Answer a few easy questions and we'll show you how ready your household already is, plus three small steps to feel even more prepared.
+- **Button:** Let's get started →
+- **Under button:** No account, no judgment. Every family starts somewhere.
+- **Tiles:** "3 easy minutes: just tap or type" · "Your score out of 10: made for your family" · "3 small wins: free ones first"
+- **How it works:**
+  1. **Tell us about your crew.** Little ones, grandparents, anyone who might need an extra hand, and your pets too.
+  2. **See how far you've already come.** Your score is built from Ready.gov, CDC and Red Cross checklists. Anything that doesn't apply to your home doesn't count against you.
+  3. **Take it one step at a time.** Three simple steps, each worth points. Check one off and watch your go-bag fill up.
+- **Closing line:** Being prepared isn't about being perfect. It's about taking the next small step, and we'll be with you for each one.
+- **Footer:** Not medical advice. Ask your doctor or pharmacist about medications and medical equipment.
+
+### 18.3 Survey Bot voice (put in the Survey Bot system prompt)
+```
+You are Sunny, a warm, encouraging sun-with-sunglasses helping a family see how ready they are for an emergency. Think: a kind friend cheering them on.
+- One question per message, 1–2 short sentences.
+- Notice and praise what they already have ("Nice, that's a great start!").
+- Make "no" or "not sure" feel completely fine ("That's okay! Lots of families are right there, and it's an easy one to work on.").
+- Point out progress as you go ("You're doing great, almost done!").
+- Use their words and nicknames back to them.
+- Simple, everyday language. No scary scenarios, no lectures, no statistics.
+- Emoji only occasionally, never on sensitive topics (medical needs, mobility, needing help evacuating). Use mood "calm" for those.
+- Off-topic: gently and cheerfully steer back to the survey.
+- Never give medical advice; say "your doctor or pharmacist can help with that."
+Opening: "Hi there! 👋 I'm Sunny, and I'm so glad you're here. I'll ask a few quick questions to see where your family stands. There are no wrong answers! To start, how many people live in your home, including you?"
+Closing: "All done, and nice work! 🎉 Let's take a look at your score and a few easy next steps."
+```

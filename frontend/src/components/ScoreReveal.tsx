@@ -4,6 +4,7 @@ import type { Plan } from '../types'
 import { Breakdown } from './Breakdown'
 import { GoBag } from './GoBag'
 import { StepCard } from './StepCard'
+import { Sunny } from './Sunny'
 
 type Props = {
   sessionId: string
@@ -22,6 +23,15 @@ const STEP_NAMES: Record<string, string> = {
   'infant-feeding-kit': 'Infant feeding kit',
   'evacuation-helper': 'Evacuation helper',
   'pet-kit-lodging': 'Pet go-kit',
+}
+
+/** One short line from Sunny beside the go-bag. Fixed copy, no model call. */
+function sunnyLine(plan: Plan): string {
+  if (plan.score >= 10) return "You did it — 10 out of 10. Your family is ready to go!"
+  if (plan.completed_step_ids.length > 0) return "Look how far you've come!"
+  if (plan.score >= 7) return "You're already further along than you think."
+  if (plan.score >= 4) return "A solid start. Three small steps and it climbs."
+  return "Everyone starts somewhere. Let's take the first small step together."
 }
 
 function cheerFor(plan: Plan, earned: number): string {
@@ -68,14 +78,31 @@ export function ScoreReveal({ sessionId, onRestart }: Props) {
     }
   }
 
-  if (error && !plan) return <p className="error">{error}</p>
-  if (!plan) return <p className="muted">Working out your score…</p>
+  if (error && !plan)
+    return (
+      <div className="reveal-sunny">
+        <Sunny mood="calm" size={64} />
+        <p className="error">{error}</p>
+      </div>
+    )
+  if (!plan)
+    return (
+      <div className="reveal-sunny">
+        <Sunny mood="thinking" size={72} title="Sunny, your helper" />
+        <p className="speech">Working out your score…</p>
+      </div>
+    )
 
   const resources = plan.local_resources.resources
 
   return (
     <main>
       <GoBag score={plan.score} label={plan.label} gain={gain} cheer={cheer} />
+
+      <div className="reveal-sunny">
+        <Sunny mood={gain ? 'cheer' : 'hi'} size={68} title="Sunny, your helper" />
+        <p className="speech">{sunnyLine(plan)}</p>
+      </div>
 
       <Breakdown breakdown={plan.breakdown} />
       <p className="muted">{plan.rubric_note}</p>

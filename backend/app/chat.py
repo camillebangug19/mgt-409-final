@@ -38,7 +38,23 @@ def save_answers(conn, session_id: str, answers: dict[str, Any], slots: list[str
             db.save_answer(conn, session_id, slot, json.dumps(answers[slot]))
 
 
-def to_response(message: str, quick_replies: list[str], state: dict, done: bool) -> ChatResponse:
+def mood_for(state: dict, done: bool, suggested: str) -> str:
+    """Sunny's face for this message.
+
+    The model proposes a mood, but sensitive questions are forced to "calm"
+    here rather than trusted to the prompt (REQUIREMENTS.md 18.1). Mood is
+    presentation only and never touches scoring.
+    """
+    if done:
+        return "cheer"
+    if survey.is_sensitive(state.get("next_slot")):
+        return "calm"
+    return suggested if suggested in ("hi", "thinking", "cheer", "calm") else "hi"
+
+
+def to_response(
+    message: str, quick_replies: list[str], state: dict, done: bool, mood: str = "hi"
+) -> ChatResponse:
     total = len(state["filled"]) + len(state["missing"])
     return ChatResponse(
         message=message,
@@ -51,6 +67,7 @@ def to_response(message: str, quick_replies: list[str], state: dict, done: bool)
         progress=state["progress"],
         filled=len(state["filled"]),
         total=total,
+        mood=mood_for(state, done, mood),
     )
 
 
@@ -82,7 +99,13 @@ async def run_turn(conn, session_id: str, message: str, model=None) -> ChatRespo
     )
     db.save_profile(conn, session_id, survey.build_profile(deps.answers).model_dump())
 
-    return to_response(result.output.message, result.output.quick_replies, new_state, done)
+    return to_response(
+        result.output.message,
+        result.output.quick_replies,
+        new_state,
+        done,
+        result.output.mood,
+    )
 
 
 def reset_history(session_id: str | None = None) -> None:

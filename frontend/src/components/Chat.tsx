@@ -3,6 +3,7 @@ import { sendMessage } from '../api'
 import type { ChatTurn, Message } from '../types'
 import { ProgressStrip } from './ProgressStrip'
 import { StatePicker } from './StatePicker'
+import { Sunny } from './Sunny'
 
 const MAX_CHARS = 500
 const OTHER = 'Something different'
@@ -30,7 +31,7 @@ export function Chat({ sessionId, onDone }: Props) {
     if (text) setMessages((previous) => [...previous, { role: 'user', text }])
     try {
       const next = await sendMessage(sessionId, text)
-      setMessages((previous) => [...previous, { role: 'bot', text: next.message }])
+      setMessages((previous) => [...previous, { role: 'bot', text: next.message, mood: next.mood }])
       setTurn(next)
       if (next.done) onDone(next)
     } catch {
@@ -74,18 +75,28 @@ export function Chat({ sessionId, onDone }: Props) {
 
       <section className="chat">
         <div className="log" role="log" aria-live="polite" aria-label="Survey conversation">
-          {messages.map((message, index) => (
-            <div key={index} className={`bubble ${message.role}`}>
-              {message.text}
-            </div>
-          ))}
+          {messages.map((message, index) =>
+            message.role === 'bot' ? (
+              <div className="bot-row" key={index}>
+                <Sunny mood={message.mood ?? 'hi'} size={40} />
+                <div className="bubble bot">{message.text}</div>
+              </div>
+            ) : (
+              <div key={index} className="bubble user">
+                {message.text}
+              </div>
+            ),
+          )}
           {thinking && (
-            <div className="bubble bot" aria-label="ReadyHome is thinking">
-              <span className="typing" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-              </span>
+            <div className="bot-row" aria-label="Sunny is thinking">
+              <Sunny mood="thinking" size={40} />
+              <div className="bubble bot">
+                <span className="typing" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              </div>
             </div>
           )}
           <div ref={logEnd} />

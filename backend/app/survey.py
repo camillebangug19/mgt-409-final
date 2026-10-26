@@ -65,6 +65,25 @@ BASELINE_EXAMPLES = {
     "pet_lodging": "somewhere specific outside your area that you have checked takes pets",
 }
 
+# Questions about bodies, medication and needing help are asked gently:
+# Sunny takes her sunglasses off for these (REQUIREMENTS.md 18.1).
+SENSITIVE_SLOTS = frozenset({
+    "mobility_needs",
+    "power_equipment",
+    "daily_meds",
+    "infant_feeding_method",
+    "meds_7day",
+    "backup_power",
+    "evacuation_helper",
+    "infant_feeding",
+})
+
+
+def is_sensitive(slot: str | None) -> bool:
+    """Whether this question deserves the calm face."""
+    return slot in SENSITIVE_SLOTS
+
+
 MAX_PEOPLE = 12
 
 # Which person has a need is a nice-to-have: scoring only asks whether anyone

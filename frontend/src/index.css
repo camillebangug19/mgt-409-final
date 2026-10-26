@@ -116,6 +116,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .facts {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  align-items: stretch;
   gap: 0.6rem;
   margin: 1.25rem 0;
 }
@@ -126,7 +127,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   padding: 0.8rem 0.7rem;
   text-align: center;
 }
-.fact .big { display: block; font-size: 1.3rem; font-weight: 800; color: var(--blue-ink); }
+.fact .big { display: block; font-size: 1.02rem; font-weight: 800; color: var(--blue-ink); line-height: 1.25; margin-bottom: 0.2rem; }
 .fact .cap { font-size: 0.75rem; color: var(--ink-soft); line-height: 1.35; }
 
 .steps-preview { margin: 1.25rem 0; padding: 0; list-style: none; }
@@ -408,4 +409,90 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   .sparks { display: none; }
+}
+
+/* --- Sunny the mascot (REQUIREMENTS.md 18.1) ---------------------------- */
+/* Clipped to its own box by default so chat avatars cannot touch the bubble
+   text. The big Sunnys get room to bob and bounce. */
+.sunny { display: block; }
+.landing-hero .sunny,
+.reveal-sunny .sunny,
+.sunny-float .sunny { overflow: visible; }
+
+/* Gentle idle bob and slowly turning rays. Both stop for reduced motion. */
+.sunny { animation: sunnyBob 3s ease-in-out infinite; }
+@keyframes sunnyBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.sunny-rays {
+  transform-box: view-box;
+  transform-origin: 110px 110px;
+  animation: sunnySpin 40s linear infinite;
+}
+@keyframes sunnySpin { to { transform: rotate(360deg); } }
+
+.sunny-cheer { animation: sunnyCheer 700ms cubic-bezier(0.34, 1.56, 0.64, 1), sunnyBob 3s ease-in-out infinite 700ms; }
+@keyframes sunnyCheer {
+  0% { transform: scale(1) translateY(0); }
+  40% { transform: scale(1.12) translateY(-8px); }
+  100% { transform: scale(1) translateY(0); }
+}
+.sunny-cheer .sunny-sparkle { animation: sparkleTwinkle 1.4s ease-in-out infinite; }
+@keyframes sparkleTwinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+.sunny-wave { transform-box: view-box; transform-origin: 170px 130px; animation: sunnyWave 1.8s ease-in-out infinite; }
+@keyframes sunnyWave {
+  0%, 100% { transform: translate(60px, 20px) rotate(40deg); }
+  50% { transform: translate(60px, 20px) rotate(18deg); }
+}
+
+.sunny-think circle { animation: thinkPulse 1.5s ease-in-out infinite; }
+.sunny-think circle:nth-child(2) { animation-delay: 0.2s; }
+.sunny-think circle:nth-child(3) { animation-delay: 0.4s; }
+@keyframes thinkPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+/* --- Sunny in place ----------------------------------------------------- */
+/* The waving hand reaches the right edge of Sunny's box, so the headline
+   needs real clearance. On narrow screens Sunny sits above it instead. */
+.landing-hero { display: flex; gap: 1.5rem; align-items: center; margin-bottom: 0.5rem; }
+.landing-hero .sunny { flex: 0 0 auto; }
+@media (max-width: 460px) {
+  .landing-hero { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}
+
+.bot-row { display: flex; gap: 0.6rem; align-items: flex-start; }
+.bot-row .sunny { flex: 0 0 auto; margin-top: 2px; }
+.bot-row .bubble { margin: 0; }
+
+.reveal-sunny { display: flex; gap: 0.7rem; align-items: center; justify-content: center; margin-top: 0.6rem; }
+.speech {
+  position: relative;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.92rem;
+  color: var(--ink);
+  max-width: 17rem;
+  text-align: left;
+}
+.speech::before {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: 50%;
+  margin-top: -6px;
+  width: 12px;
+  height: 12px;
+  background: var(--card);
+  border-left: 1.5px solid var(--line);
+  border-bottom: 1.5px solid var(--line);
+  transform: rotate(45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sunny, .sunny-rays, .sunny-wave, .sunny-cheer,
+  .sunny-think circle, .sunny-cheer .sunny-sparkle { animation: none !important; }
 }
