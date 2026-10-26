@@ -22,3 +22,6 @@ docs/screenshots/*.png
 docs/demo/raw/
 docs/demo/raw.webm
 docs/demo/audio/
+
+# upload copy of the demo video; the tracked one lives in docs/demo/
+/readyhome-demo.mp4
